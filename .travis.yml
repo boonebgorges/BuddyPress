@@ -61,5 +61,5 @@ before_script:
     - npm install
 
 # Run tests
-script: grunt travis
+script: grunt travis --force
 
