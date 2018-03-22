@@ -9,22 +9,22 @@ if ( ! defined( '\WP_CLI' ) ) {
 }
 
 WP_CLI::add_hook( 'before_wp_load', function() {
-	require_once( __DIR__ . '/component.php' );
-	require_once( __DIR__ . '/components/signup.php' );
-	require_once( __DIR__ . '/components/activity.php' );
-	require_once( __DIR__ . '/components/activity-favorite.php' );
-	require_once( __DIR__ . '/components/component.php' );
-	require_once( __DIR__ . '/components/group.php' );
-	require_once( __DIR__ . '/components/group-member.php' );
-	require_once( __DIR__ . '/components/group-invite.php' );
-	require_once( __DIR__ . '/components/member.php' );
-	require_once( __DIR__ . '/components/friend.php' );
-	require_once( __DIR__ . '/components/xprofile-group.php' );
-	require_once( __DIR__ . '/components/xprofile-field.php' );
-	require_once( __DIR__ . '/components/xprofile-data.php' );
-	require_once( __DIR__ . '/components/tool.php' );
-	require_once( __DIR__ . '/components/message.php' );
-	require_once( __DIR__ . '/components/email.php' );
+	require_once( __DIR__ . '/command/class-buddypresscommand.php' );
+	require_once( __DIR__ . '/command/class-signup.php' );
+	require_once( __DIR__ . '/command/class-activity.php' );
+	require_once( __DIR__ . '/command/class-activity-favorite.php' );
+	require_once( __DIR__ . '/command/class-component.php' );
+	require_once( __DIR__ . '/command/class-group.php' );
+	require_once( __DIR__ . '/command/class-group-member.php' );
+	require_once( __DIR__ . '/command/class-group-invite.php' );
+	require_once( __DIR__ . '/command/class-member.php' );
+	require_once( __DIR__ . '/command/class-friend.php' );
+	require_once( __DIR__ . '/command/class-xprofile-group.php' );
+	require_once( __DIR__ . '/command/class-xprofile-field.php' );
+	require_once( __DIR__ . '/command/class-xprofile-data.php' );
+	require_once( __DIR__ . '/command/class-tool.php' );
+	require_once( __DIR__ . '/command/class-message.php' );
+	require_once( __DIR__ . '/command/class-email.php' );
 
 	WP_CLI::add_command( 'bp signup', __NAMESPACE__ . '\\Command\\Signup' );
 
