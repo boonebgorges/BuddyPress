@@ -13,9 +13,11 @@ $multisite = ! empty( $argv[3] );
 
 require_once $config_file_path;
 require_once $tests_dir_path . '/includes/functions.php';
+require_once $tests_dir_path . '/includes/mock-mailer.php';
 
 function _load_buddypress() {
 	require dirname( dirname( dirname( dirname( __FILE__ ) ) ) ) . '/src/bp-loader.php';
+	do_action( 'activate_src/bp-loader.php' );
 }
 tests_add_filter( 'muplugins_loaded', '_load_buddypress' );
 
@@ -40,8 +42,18 @@ require_once ABSPATH . '/wp-settings.php';
 
 echo "Installing BuddyPress...\n";
 
-$wpdb->query( 'SET storage_engine = INNODB' );
+$wpdb->query( 'SET default_storage_engine = INNODB' );
 $wpdb->select( DB_NAME, $wpdb->dbh );
+
+// Drop BuddyPress tables.
+foreach ( $wpdb->get_col( "SHOW TABLES LIKE '" . $wpdb->prefix . "bp%'" ) as $bp_table ) {
+	$wpdb->query( "DROP TABLE {$bp_table}" );
+}
+
+function _bp_mock_mailer( $class ) {
+	return 'BP_UnitTest_Mailer';
+}
+tests_add_filter( 'bp_send_email_delivery_class', '_bp_mock_mailer' );
 
 // Install BuddyPress
 bp_version_updater();

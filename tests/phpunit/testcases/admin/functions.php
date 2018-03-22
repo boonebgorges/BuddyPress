@@ -8,7 +8,7 @@ class BP_Tests_Admin_Functions extends BP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		$this->old_current_user = get_current_user_id();
-		$this->set_current_user( $this->factory->user->create( array( 'role' => 'administrator' ) ) );
+		$this->set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
 
 		if ( ! function_exists( 'bp_admin' ) ) {
 			require_once( BP_PLUGIN_DIR . 'bp-core/bp-core-admin.php' );
@@ -83,27 +83,10 @@ class BP_Tests_Admin_Functions extends BP_UnitTestCase {
 
 		$this->assertEquals( bp_core_admin_get_active_components_from_submitted_settings( $submitted2 ), array( 'activity' => 1, 'groups' => 1, 'members' => 1, 'messages' => 1, 'settings' => 1, 'xprofile' => 1 ) );
 
-		// Activating from the Retired screen
-		$_GET['action'] = 'retired';
-		buddypress()->active_components = array(
-			'activity' => 1,
-			'members' => 1,
-			'messages' => 1,
-			'settings' => 1,
-			'xprofile' => 1,
-		);
-
-		$submitted3 = array(
-			'forums' => 1,
-		);
-
-		$this->assertEquals( bp_core_admin_get_active_components_from_submitted_settings( $submitted3 ), array( 'activity' => 1, 'forums' => 1, 'members' => 1, 'messages' => 1, 'settings' => 1, 'xprofile' => 1 ) );
-
 		// Deactivating from the Retired screen
 		$_GET['action'] = 'retired';
 		buddypress()->active_components = array(
 			'activity' => 1,
-			'forums' => 1,
 			'members' => 1,
 			'messages' => 1,
 			'settings' => 1,
@@ -138,13 +121,13 @@ class BP_Tests_Admin_Functions extends BP_UnitTestCase {
 		$bp->foo->slug = 'foo';
 		$bp->foo->name = 'Foo';
 		$bp->active_components[ $bp->foo->id ] = 1;
-		$new_page_ids = array( $bp->foo->id => $this->factory->post->create( array(
+		$new_page_ids = array( $bp->foo->id => self::factory()->post->create( array(
 			'post_type'  => 'page',
 			'post_title' => $bp->foo->name,
 			'post_name'  => $bp->foo->slug,
 		) ) );
 
-		$page_ids = array_merge( $new_page_ids, (array) bp_core_get_directory_page_ids( 'all' ) );
+		$page_ids = array_merge( $new_page_ids, bp_core_get_directory_page_ids( 'all' ) );
 		bp_core_update_directory_page_ids( $page_ids );
 
 		$bp->active_components = bp_core_admin_get_active_components_from_submitted_settings( $reset_active_components );
@@ -208,14 +191,57 @@ class BP_Tests_Admin_Functions extends BP_UnitTestCase {
 
 		$missing_pages = array();
 		foreach( buddypress()->admin->notices as $notice ) {
+			if ( false !== strpos( $notice['message'], 'BuddyPress is almost ready' ) ) {
+				continue;
+			}
+
 			preg_match_all( '/<strong>(.+?)<\/strong>/', $notice['message'], $missing_pages );
 		}
 
-		$this->assertNotContains( 'Register', $missing_pages[1] );
-		$this->assertNotContains( 'Activate', $missing_pages[1] );
+		$this->assertEmpty( $missing_pages );
 
 		// Reset buddypress() vars
 		$bp->pages = $reset_bp_pages;
 		$bp->admin->notices = $reset_admin_notices;
+	}
+
+	/**
+	 * @ticket BP6936
+	 */
+	public function test_email_type_descriptions_should_match_when_split_terms_exist() {
+		global $wpdb;
+
+		// Delete all existing email types and descriptions.
+		$emails = get_posts( array(
+			'fields' => 'ids',
+			'post_type' => bp_get_email_post_type(),
+		) );
+		foreach ( $emails as $email ) {
+			wp_delete_post( $email, true );
+		}
+
+		$descriptions = get_terms( bp_get_email_tax_type(), array(
+			'fields' => 'ids',
+			'hide_empty' => false,
+		) );
+		foreach ( $descriptions as $description ) {
+			wp_delete_term( (int) $description, bp_get_email_tax_type() );
+		}
+
+		// Fake the existence of split terms by offsetting the term_taxonomy table.
+		$wpdb->insert( $wpdb->term_taxonomy, array( 'term_id' => 9999, 'taxonomy' => 'post_tag', 'description' => 'foo description', 'parent' => 0, 'count' => 0 ) );
+
+		require_once( BP_PLUGIN_DIR . '/bp-core/admin/bp-core-admin-schema.php' );
+		bp_core_install_emails();
+
+		$d_terms = get_terms( bp_get_email_tax_type(), array(
+			'hide_empty' => false,
+		) );
+
+		$correct_descriptions = bp_email_get_type_schema( 'description' );
+		foreach ( $d_terms as $d_term ) {
+			$correct_description = $correct_descriptions[ $d_term->slug ];
+			$this->assertSame( $correct_description, $d_term->description );
+		}
 	}
 }

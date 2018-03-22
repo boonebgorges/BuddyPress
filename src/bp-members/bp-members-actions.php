@@ -1,7 +1,6 @@
 <?php
-
 /**
- * BuddyPress Members Actions
+ * BuddyPress Members Actions.
  *
  * Action functions are exactly the same as screen functions, however they do not
  * have a template screen associated with them. Usually they will send the user
@@ -9,9 +8,10 @@
  *
  * @package BuddyPress
  * @subpackage MembersActions
+ * @since 1.5.0
  */
 
-// Exit if accessed directly
+// Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -23,33 +23,34 @@ defined( 'ABSPATH' ) || exit;
  *
  * Note: no longer used in the current state. See the Settings component.
  *
- * @param int $user_id Optional. User ID to mark as spam. Defaults to displayed
- *        user.
+ * @since 1.1.0
+ *
+ * @param int $user_id Optional. User ID to mark as spam. Defaults to displayed user.
  */
 function bp_core_action_set_spammer_status( $user_id = 0 ) {
 
 	// Only super admins can currently spam users (but they can't spam
-	// themselves)
+	// themselves).
 	if ( ! is_super_admin() || bp_is_my_profile() ) {
 		return;
 	}
 
-	// Use displayed user if it's not yourself
+	// Use displayed user if it's not yourself.
 	if ( empty( $user_id ) )
 		$user_id = bp_displayed_user_id();
 
 	if ( bp_is_current_component( 'admin' ) && ( in_array( bp_current_action(), array( 'mark-spammer', 'unmark-spammer' ) ) ) ) {
 
-		// Check the nonce
+		// Check the nonce.
 		check_admin_referer( 'mark-unmark-spammer' );
 
-		// To spam or not to spam
+		// To spam or not to spam.
 		$status = bp_is_current_action( 'mark-spammer' ) ? 'spam' : 'ham';
 
-		// The heavy lifting
+		// The heavy lifting.
 		bp_core_process_spammer_status( $user_id, $status );
 
-		// Add feedback message. @todo - Error reporting
+		// Add feedback message. @todo - Error reporting.
 		if ( 'spam' == $status ) {
 			bp_core_add_message( __( 'User marked as spammer. Spam users are visible only to site admins.', 'buddypress' ) );
 		} else {
@@ -60,17 +61,22 @@ function bp_core_action_set_spammer_status( $user_id = 0 ) {
 		$is_spam = 'spam' == $status;
 		do_action( 'bp_core_action_set_spammer_status', bp_displayed_user_id(), $is_spam );
 
-		// Redirect back to where we came from
+		// Redirect back to where we came from.
 		bp_core_redirect( wp_get_referer() );
 	}
 }
-// Unhooked in BuddyPress (1.6.0) - moved to settings
-//add_action( 'bp_actions', 'bp_core_action_set_spammer_status' );
+
+/*
+ * Unhooked in 1.6.0 - moved to settings.
+ * add_action( 'bp_actions', 'bp_core_action_set_spammer_status' );
+ */
 
 /**
  * Process user deletion requests.
  *
  * Note: No longer called here. See the Settings component.
+ *
+ * @since 1.1.0
  */
 function bp_core_action_delete_user() {
 
@@ -79,7 +85,7 @@ function bp_core_action_delete_user() {
 
 	if ( bp_is_current_component( 'admin' ) && bp_is_current_action( 'delete-user' ) ) {
 
-		// Check the nonce
+		// Check the nonce.
 		check_admin_referer( 'delete-user' );
 
 		$errors = false;
@@ -100,13 +106,66 @@ function bp_core_action_delete_user() {
 			bp_core_redirect( bp_loggedin_user_domain() );
 	}
 }
-// Unhooked in BuddyPress (1.6.0) - moved to settings
-//add_action( 'bp_actions', 'bp_core_action_delete_user' );
+
+/**
+ * Catches and processes account activation requests.
+ *
+ * @since 3.0.0
+ */
+function bp_members_action_activate_account() {
+	if ( ! bp_is_current_component( 'activate' ) ) {
+		return;
+	}
+
+	if ( is_user_logged_in() ) {
+		return;
+	}
+
+	if ( ! empty( $_POST['key'] ) ) {
+		$key = wp_unslash( $_POST['key'] );
+
+	// Backward compatibility with templates using `method="get"` in their activation forms.
+	} elseif ( ! empty( $_GET['key'] ) ) {
+		$key = wp_unslash( $_GET['key'] );
+	}
+
+	if ( empty( $key ) ) {
+		return;
+	}
+
+	$bp = buddypress();
+
+	/**
+	 * Filters the activation signup.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param bool|int $value Value returned by activation.
+	 *                        Integer on success, boolean on failure.
+	 */
+	$user = apply_filters( 'bp_core_activate_account', bp_core_activate_signup( $key ) );
+
+	// If there were errors, add a message and redirect.
+	if ( ! empty( $user->errors ) ) {
+		bp_core_add_message( $user->get_error_message(), 'error' );
+		bp_core_redirect( trailingslashit( bp_get_root_domain() . '/' . $bp->pages->activate->slug ) );
+	}
+
+	bp_core_add_message( __( 'Your account is now active!', 'buddypress' ) );
+	bp_core_redirect( add_query_arg( 'activated', '1', bp_get_activation_page() ) );
+
+}
+add_action( 'bp_actions', 'bp_members_action_activate_account' );
+
+/*
+ * Unhooked in 1.6.0 - moved to settings
+ * add_action( 'bp_actions', 'bp_core_action_delete_user' );
+ */
 
 /**
  * Redirect to a random member page when visiting a ?random-member URL.
  *
- * @since BuddyPress (1.0.0)
+ * @since 1.0.0
  */
 function bp_core_get_random_member() {
 	if ( ! isset( $_GET['random-member'] ) )

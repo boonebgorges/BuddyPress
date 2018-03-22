@@ -1,5 +1,4 @@
 <?php
-
 /**
  * BuddyPress - Users Friends
  *
@@ -9,7 +8,7 @@
 
 ?>
 
-<div class="item-list-tabs no-ajax" id="subnav" role="navigation">
+<div class="item-list-tabs no-ajax" id="subnav" aria-label="<?php esc_attr_e( 'Member secondary navigation', 'buddypress' ); ?>" role="navigation">
 	<ul>
 		<?php if ( bp_is_my_profile() ) bp_get_options_nav(); ?>
 
@@ -23,7 +22,14 @@
 					<option value="newest"><?php _e( 'Newest Registered', 'buddypress' ); ?></option>
 					<option value="alphabetical"><?php _e( 'Alphabetical', 'buddypress' ); ?></option>
 
-					<?php do_action( 'bp_member_friends_order_options' ); ?>
+					<?php
+
+					/**
+					 * Fires inside the members friends order options select input.
+					 *
+					 * @since 2.0.0
+					 */
+					do_action( 'bp_member_friends_order_options' ); ?>
 
 				</select>
 			</li>
@@ -38,7 +44,25 @@ switch ( bp_current_action() ) :
 
 	// Home/My Friends
 	case 'my-friends' :
+
+		/**
+		 * Fires before the display of member friends content.
+		 *
+		 * @since 1.2.0
+		 */
 		do_action( 'bp_before_member_friends_content' ); ?>
+
+		<?php if (is_user_logged_in() ) : ?>
+			<h2 class="bp-screen-reader-text"><?php
+				/* translators: accessibility text */
+				_e( 'My friends', 'buddypress' );
+			?></h2>
+		<?php else : ?>
+			<h2 class="bp-screen-reader-text"><?php
+				/* translators: accessibility text */
+				_e( 'Friends', 'buddypress' );
+			?></h2>
+		<?php endif ?>
 
 		<div class="members friends">
 
@@ -46,7 +70,14 @@ switch ( bp_current_action() ) :
 
 		</div><!-- .members.friends -->
 
-		<?php do_action( 'bp_after_member_friends_content' );
+		<?php
+
+		/**
+		 * Fires after the display of member friends content.
+		 *
+		 * @since 1.2.0
+		 */
+		do_action( 'bp_after_member_friends_content' );
 		break;
 
 	case 'requests' :

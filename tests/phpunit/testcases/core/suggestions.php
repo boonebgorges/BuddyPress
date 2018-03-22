@@ -12,11 +12,7 @@ class BP_Tests_Suggestions_Authenticated extends BP_UnitTestCase {
 	protected static $old_user_id  = 0;
 	protected static $user_ids     = array();
 
-	public static function setUpBeforeClass() {
-		parent::setUpBeforeClass();
-
-		$factory = new BP_UnitTest_Factory();
-
+	public static function wpSetUpBeforeClass( $factory ) {
 		self::$old_user_id  = get_current_user_id();
 		self::$current_user = $factory->user->create( array(
 			'display_name' => 'Katie Parker',
@@ -51,7 +47,7 @@ class BP_Tests_Suggestions_Authenticated extends BP_UnitTestCase {
 		}
 
 		// Create some dummy friendships (but not the corresponding activity items).
-		remove_action( 'friends_friendship_accepted', 'bp_friends_friendship_accepted_activity', 10, 4 );
+		remove_action( 'friends_friendship_accepted', 'bp_friends_friendship_accepted_activity', 10 );
 		friends_add_friend( self::$current_user, self::$user_ids['aardvark'], true );
 		friends_add_friend( self::$current_user, self::$user_ids['cat'], true );
 		friends_add_friend( self::$current_user, self::$user_ids['caterpillar'], true );

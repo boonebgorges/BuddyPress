@@ -1,25 +1,26 @@
 <?php
 /**
- * BuddyPress XProfile Classes
+ * BuddyPress XProfile Classes.
  *
  * @package BuddyPress
  * @subpackage XProfileClasses
+ * @since 2.1.0
  */
 
-// Exit if accessed directly
+// Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
 /**
  * URL xprofile field type.
  *
- * @since BuddyPress (2.1.0)
+ * @since 2.1.0
  */
 class BP_XProfile_Field_Type_URL extends BP_XProfile_Field_Type {
 
 	/**
 	 * Constructor for the URL field type
 	 *
-	 * @since BuddyPress (2.1.0)
+	 * @since 2.1.0
 	 */
 	public function __construct() {
 		parent::__construct();
@@ -32,7 +33,7 @@ class BP_XProfile_Field_Type_URL extends BP_XProfile_Field_Type {
 		/**
 		 * Fires inside __construct() method for BP_XProfile_Field_Type_URL class.
 		 *
-		 * @since BuddyPress (2.0.0)
+		 * @since 2.0.0
 		 *
 		 * @param BP_XProfile_Field_Type_URL $this Current instance of
 		 *                                         the field type URL.
@@ -45,10 +46,11 @@ class BP_XProfile_Field_Type_URL extends BP_XProfile_Field_Type {
 	 *
 	 * Must be used inside the {@link bp_profile_fields()} template loop.
 	 *
+	 * @since 2.1.0
+	 *
 	 * @param array $raw_properties Optional key/value array of
-	 *        {@link http://dev.w3.org/html5/markup/input.number.html permitted attributes}
-	 *        that you want to add.
-	 * @since BuddyPress (2.1.0)
+	 *                              {@link http://dev.w3.org/html5/markup/input.number.html permitted attributes}
+	 *                              that you want to add.
 	 */
 	public function edit_field_html( array $raw_properties = array() ) {
 
@@ -64,19 +66,21 @@ class BP_XProfile_Field_Type_URL extends BP_XProfile_Field_Type {
 			'value'     => esc_url( bp_get_the_profile_field_edit_value() ),
 		) ); ?>
 
-		<label for="<?php bp_the_profile_field_input_name(); ?>">
+		<legend id="<?php bp_the_profile_field_input_name(); ?>-1">
 			<?php bp_the_profile_field_name(); ?>
-			<?php if ( bp_get_the_profile_field_is_required() ) : ?>
-				<?php esc_html_e( '(required)', 'buddypress' ); ?>
-			<?php endif; ?>
-		</label>
+			<?php bp_the_profile_field_required_label(); ?>
+		</legend>
 
 		<?php
 
 		/** This action is documented in bp-xprofile/bp-xprofile-classes */
 		do_action( bp_get_the_profile_field_errors_action() ); ?>
 
-		<input <?php echo $this->get_edit_field_html_elements( $r ); ?>>
+		<input <?php echo $this->get_edit_field_html_elements( $r ); ?> aria-labelledby="<?php bp_the_profile_field_input_name(); ?>-1" aria-describedby="<?php bp_the_profile_field_input_name(); ?>-3">
+
+		<?php if ( bp_get_the_profile_field_description() ) : ?>
+			<p class="description" id="<?php bp_the_profile_field_input_name(); ?>-3"><?php bp_the_profile_field_description(); ?></p>
+		<?php endif; ?>
 
 		<?php
 	}
@@ -86,9 +90,10 @@ class BP_XProfile_Field_Type_URL extends BP_XProfile_Field_Type {
 	 *
 	 * Must be used inside the {@link bp_profile_fields()} template loop.
 	 *
+	 * @since 2.1.0
+	 *
 	 * @param array $raw_properties Optional key/value array of permitted
-	 *        attributes that you want to add.
-	 * @since BuddyPress (2.1.0)
+	 *                              attributes that you want to add.
 	 */
 	public function admin_field_html( array $raw_properties = array() ) {
 
@@ -96,6 +101,10 @@ class BP_XProfile_Field_Type_URL extends BP_XProfile_Field_Type {
 			'type' => 'url'
 		) ); ?>
 
+		<label for="<?php bp_the_profile_field_input_name(); ?>" class="screen-reader-text"><?php
+			/* translators: accessibility text */
+			esc_html_e( 'URL', 'buddypress' );
+		?></label>
 		<input <?php echo $this->get_edit_field_html_elements( $r ); ?>>
 
 		<?php
@@ -106,9 +115,11 @@ class BP_XProfile_Field_Type_URL extends BP_XProfile_Field_Type {
 	 * on the wp-admin Profile Fields "Add Field" and "Edit Field" screens, but
 	 * for this field type, we don't want it, so it's stubbed out.
 	 *
+	 * @since 2.1.0
+	 *
 	 * @param BP_XProfile_Field $current_field The current profile field on the add/edit screen.
-	 * @param string $control_type Optional. HTML input type used to render the current field's child options.
-	 * @since BuddyPress (2.1.0)
+	 * @param string            $control_type  Optional. HTML input type used to render the current
+	 *                                         field's child options.
 	 */
 	public function admin_new_field_html( BP_XProfile_Field $current_field, $control_type = '' ) {}
 
@@ -122,23 +133,25 @@ class BP_XProfile_Field_Type_URL extends BP_XProfile_Field_Type {
 	 * the protocol is missing, we prepend 'http://' before passing to
 	 * is_valid().
 	 *
-	 * @since BuddyPress (2.1.0)
+	 * @since 2.1.0
+	 * @since 2.4.0 Added the `$field_id` parameter.
 	 *
-	 * @param string $submitted_value Raw value submitted by the user.
+	 * @param string     $submitted_value Raw value submitted by the user.
+	 * @param string|int $field_id        Optional. ID of the field.
 	 * @return string
 	 */
-	public static function pre_validate_filter( $submitted_value = '' ) {
+	public static function pre_validate_filter( $submitted_value = '', $field_id = '' ) {
 
-		// Allow empty URL values
+		// Allow empty URL values.
 		if ( empty( $submitted_value ) ) {
 			return '';
 		}
 
-		// Run some checks on the submitted value
-		if ( false === strpos( $submitted_value, ':'  )
-		     && substr( $submitted_value, 0, 1 ) !== '/'
-		     && substr( $submitted_value, 0, 1 ) !== '#'
-		     && ! preg_match( '/^[a-z0-9-]+?\.php/i', $submitted_value )
+		// Run some checks on the submitted value.
+		if ( false === strpos( $submitted_value, ':'  ) &&
+			substr( $submitted_value, 0, 1 ) !== '/' &&
+			substr( $submitted_value, 0, 1 ) !== '#' &&
+			! preg_match( '/^[a-z0-9-]+?\.php/i', $submitted_value )
 		) {
 			$submitted_value = 'http://' . $submitted_value;
 		}
@@ -149,12 +162,14 @@ class BP_XProfile_Field_Type_URL extends BP_XProfile_Field_Type {
 	/**
 	 * Format URL values for display.
 	 *
-	 * @since BuddyPress (2.1.0)
+	 * @since 2.1.0
+	 * @since 2.4.0 Added the `$field_id` parameter.
 	 *
-	 * @param string $field_value The URL value, as saved in the database.
+	 * @param string     $field_value The URL value, as saved in the database.
+	 * @param string|int $field_id    Optional. ID of the field.
 	 * @return string URL converted to a link.
 	 */
-	public static function display_filter( $field_value ) {
+	public static function display_filter( $field_value, $field_id = '' ) {
 		$link      = strip_tags( $field_value );
 		$no_scheme = preg_replace( '#^https?://#', '', rtrim( $link, '/' ) );
 		$url_text  = str_replace( $link, $no_scheme, $field_value );

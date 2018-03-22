@@ -1,12 +1,23 @@
-(function( $, undefined ) {
+/* global bp */
+
+window.bp = window.bp || {};
+
+( function( bp, $, undefined ) {
 	var mentionsQueryCache = [],
 		mentionsItem;
+
+	bp.mentions       = bp.mentions || {};
+	bp.mentions.users = window.bp.mentions.users || [];
+
+	if ( typeof window.BP_Suggestions === 'object' ) {
+		bp.mentions.users = window.BP_Suggestions.friends || bp.mentions.users;
+	}
 
 	/**
 	 * Adds BuddyPress @mentions to form inputs.
 	 *
 	 * @param {array|object} options If array, becomes the suggestions' data source. If object, passed as config to $.atwho().
-	 * @since BuddyPress (2.1.0)
+	 * @since 2.1.0
 	 */
 	$.fn.bp_mentions = function( options ) {
 		if ( $.isArray( options ) ) {
@@ -17,12 +28,12 @@
 		 * Default options for at.js; see https://github.com/ichord/At.js/.
 		 */
 		var suggestionsDefaults = {
-			delay:               200,
-			hide_without_suffix: true,
-			insert_tpl:          '</>${atwho-data-value}</>', // For contentEditable, the fake tags make jQuery insert a textNode.
-			limit:               10,
-			start_with_space:    false,
-			suffix:              '',
+			delay:             200,
+			hideWithoutSuffix: true,
+			insertTpl:         '</>@${ID}</>', // For contentEditable, the fake tags make jQuery insert a textNode.
+			limit:             10,
+			startWithSpace:    false,
+			suffix:            '',
 
 			callbacks: {
 				/**
@@ -33,7 +44,7 @@
 				 * @param {array} data
 				 * @param {string} search_key
 				 * @return {array}
-				 * @since BuddyPress (2.1.0)
+				 * @since 2.1.0
 				 */
 				filter: function( query, data, search_key ) {
 					var item, _i, _len, _results = [],
@@ -56,7 +67,7 @@
 				 * @param {unknown} li
 				 * @param {string} query
 				 * @return {string}
-				 * @since BuddyPress (2.1.0)
+				 * @since 2.1.0
 				 */
 				highlighter: function( li, query ) {
 					if ( ! query ) {
@@ -73,7 +84,7 @@
 				 * Reposition the suggestion list dynamically.
 				 *
 				 * @param {unknown} offset
-				 * @since BuddyPress (2.1.0)
+				 * @since 2.1.0
 				 */
 				before_reposition: function( offset ) {
 					// get the iframe, if any, already applied with atwho
@@ -130,7 +141,7 @@
 				 * @param {string) content The content that will be inserted.
 				 * @param {string) suffix Applied to the end of the content string.
 				 * @return {string}
-				 * @since BuddyPress (2.1.0)
+				 * @since 2.1.0
 				 */
 				inserting_wrapper: function( $inputor, content, suffix ) {
 					return '' + content + suffix;
@@ -148,9 +159,10 @@
 				 *
 				 * @param {string} query Partial @mention to search for.
 				 * @param {function} render_view Render page callback function.
-				 * @since BuddyPress (2.1.0)
+				 * @since 2.1.0
+				 * @since 3.0.0. Renamed from "remote_filter" for at.js v1.5.4 support.
 				 */
-				remote_filter: function( query, render_view ) {
+				remoteFilter: function( query, render_view ) {
 					var self = $( this ),
 						params = {};
 
@@ -175,7 +187,7 @@
 						 * Success callback for the @suggestions lookup.
 						 *
 						 * @param {object} response Details of users matching the query.
-						 * @since BuddyPress (2.1.0)
+						 * @since 2.1.0
 						 */
 						.done(function( response ) {
 							if ( ! response.success ) {
@@ -189,7 +201,7 @@
 								 *
 								 * @param {array} suggestion A suggestion's original data.
 								 * @return {array} A suggestion's new data.
-								 * @since BuddyPress (2.1.0)
+								 * @since 2.1.0
 								 */
 								function( suggestion ) {
 									suggestion.search = suggestion.search || suggestion.ID + ' ' + suggestion.name;
@@ -210,7 +222,7 @@
 				 *
 				 * @param {array} suggestion A suggestion's original data.
 				 * @return {array} A suggestion's new data.
-				 * @since BuddyPress (2.1.0)
+				 * @since 2.1.0
 				 */
 				function( suggestion ) {
 					suggestion.search = suggestion.search || suggestion.ID + ' ' + suggestion.name;
@@ -219,8 +231,8 @@
 			),
 
 			at:         '@',
-			search_key: 'search',
-			tpl:        '<li data-value="@${ID}"><img src="${image}" /><span class="username">@${ID}</span><small>${name}</small></li>'
+			searchKey:  'search',
+			displayTpl: '<li data-value="@${ID}"><img src="${image}" /><span class="username">@${ID}</span><small>${name}</small></li>'
 		},
 
 		opts = $.extend( true, {}, suggestionsDefaults, mentionsDefaults, options );
@@ -228,34 +240,17 @@
 	};
 
 	$( document ).ready(function() {
-		var loadMentionsInTinyMCE,
-			loadAttempts = 0,
-			users        = [];
-
-		if ( typeof window.BP_Suggestions === 'object' ) {
-			users = window.BP_Suggestions.friends || users;
-		}
-
-		// Dashboard post 'visual' editor.
-		loadMentionsInTinyMCE = function() {
-			if ( loadAttempts < 4 || ! $( 'body' ).hasClass( 'wp-admin' ) ) {
-				loadAttempts++;
-
-				if ( typeof window.tinyMCE === 'undefined' || window.tinyMCE.activeEditor === null || typeof window.tinyMCE.activeEditor === 'undefined' ) {
-					setTimeout( loadMentionsInTinyMCE, 500 );
-					return;
-				}
-			}
-
-			$( window.tinyMCE.activeEditor.contentDocument.activeElement )
-				.atwho( 'setIframe', $( '#content_ifr' )[0] )
-				.bp_mentions( users );
-		};
-
 		// Activity/reply, post comments, dashboard post 'text' editor.
-		$( '.bp-suggestions, #comments form textarea, .wp-editor-area' ).bp_mentions( users );
-
-		// Dashboard post 'visual' editor.
-		loadMentionsInTinyMCE();
+		$( '.bp-suggestions, #comments form textarea, .wp-editor-area' ).bp_mentions( bp.mentions.users );
 	});
-})( jQuery );
+
+	bp.mentions.tinyMCEinit = function() {
+		if ( typeof window.tinyMCE === 'undefined' || window.tinyMCE.activeEditor === null || typeof window.tinyMCE.activeEditor === 'undefined' ) {
+			return;
+		} else {
+			$( window.tinyMCE.activeEditor.contentDocument.activeElement )
+				.atwho( 'setIframe', $( '.wp-editor-wrap iframe' )[0] )
+				.bp_mentions( bp.mentions.users );
+		}
+	};
+})( bp, jQuery );

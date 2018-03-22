@@ -7,10 +7,7 @@ class BP_Tests_Media_Extractor extends BP_UnitTestCase {
 	public static $media_extractor = null;
 	public static $richtext        = '';
 
-
-	public static function setUpBeforeClass() {
-		parent::setUpBeforeClass();
-
+	public static function wpSetUpBeforeClass( $f ) {
 		self::$media_extractor = new BP_Media_Extractor();
 		self::$richtext        = "Hello world.
 
@@ -35,7 +32,7 @@ class BP_Tests_Media_Extractor extends BP_UnitTestCase {
 		There are two types of [gallery] shortcodes; one like that, and another with IDs specified.
 
 		Audio shortcodes:
-		[audio src='http://example.com/source.mp3'] 
+		[audio src='http://example.com/source.mp3']
 		[audio src='http://example.com/source.wav' loop='on' autoplay='off' preload='metadata'].
 
 		The following shortcode should be picked up by the shortcode extractor, but not the audio extractor, because
@@ -143,7 +140,7 @@ class BP_Tests_Media_Extractor extends BP_UnitTestCase {
 
 
 	public function test_extract_multiple_media_types_from_content() {
-		$this->factory->user->create( array( 'user_login' => 'paulgibbs' ) );
+		self::factory()->user->create( array( 'user_login' => 'paulgibbs' ) );
 		$media = self::$media_extractor->extract( self::$richtext, BP_Media_Extractor::LINKS | BP_Media_Extractor::MENTIONS );
 
 		$this->assertNotEmpty( $media['links'] );
@@ -152,7 +149,7 @@ class BP_Tests_Media_Extractor extends BP_UnitTestCase {
 	}
 
 	public function test_extract_media_from_a_wp_post() {
-		$post_id = $this->factory->post->create( array( 'post_content' => self::$richtext ) );
+		$post_id = self::factory()->post->create( array( 'post_content' => self::$richtext ) );
 		$media   = self::$media_extractor->extract( get_post( $post_id ), BP_Media_Extractor::LINKS );
 
 		$this->assertArrayHasKey( 'links', $media );
@@ -174,7 +171,7 @@ class BP_Tests_Media_Extractor extends BP_UnitTestCase {
 	}
 
 	public function test_extract_no_links_from_content_with_invalid_links() {
-		$richtext = "This is some sample text, with links, but not the kinds we want.		
+		$richtext = "This is some sample text, with links, but not the kinds we want.
 		<a href=''>Empty links should be ignore<a/> and
 		<a href='phone:004400'>weird protocols should be ignored, too</a>.
 		";
@@ -189,7 +186,7 @@ class BP_Tests_Media_Extractor extends BP_UnitTestCase {
 	 */
 
 	public function test_extract_mentions_from_content_with_activity_enabled() {
-		$this->factory->user->create( array( 'user_login' => 'paulgibbs' ) );
+		self::factory()->user->create( array( 'user_login' => 'paulgibbs' ) );
 		$media = self::$media_extractor->extract( self::$richtext, BP_Media_Extractor::MENTIONS );
 
 		$this->assertArrayHasKey( 'user_id', $media['mentions'][0] );
@@ -197,7 +194,7 @@ class BP_Tests_Media_Extractor extends BP_UnitTestCase {
 	}
 
 	public function test_extract_mentions_from_content_with_activity_disabled() {
-		$this->factory->user->create( array( 'user_login' => 'paulgibbs' ) );
+		self::factory()->user->create( array( 'user_login' => 'paulgibbs' ) );
 		$was_activity_enabled = false;
 
 		// Turn activity off.
@@ -279,7 +276,7 @@ class BP_Tests_Media_Extractor extends BP_UnitTestCase {
 
 		$this->assertArrayHasKey( 'images', $media );
 		$media = array_values( wp_list_filter( $media['images'], array( 'source' => 'html' ) ) );
-	
+
 		$this->assertSame( 'http://example.com/image.gif',           $media[0]['url'] );
 		$this->assertSame( 'http://example.com/image-in-a-link.gif', $media[1]['url'] );
 	}
@@ -303,8 +300,8 @@ class BP_Tests_Media_Extractor extends BP_UnitTestCase {
 
 	public function test_extract_images_from_content_with_galleries_variant_no_ids() {
 		// To test the [gallery] shortcode, we need to create a post and an attachment.
-		$post_id       = $this->factory->post->create( array( 'post_content' => self::$richtext ) );
-		$attachment_id = $this->factory->attachment->create_object( 'image.jpg', $post_id, array(
+		$post_id       = self::factory()->post->create( array( 'post_content' => self::$richtext ) );
+		$attachment_id = self::factory()->attachment->create_object( 'image.jpg', $post_id, array(
 			'post_mime_type' => 'image/jpeg',
 			'post_type'      => 'attachment'
 		) );
@@ -320,25 +317,15 @@ class BP_Tests_Media_Extractor extends BP_UnitTestCase {
 		$media = array_values( wp_list_filter( $media['images'], array( 'source' => 'galleries' ) ) );
 		$this->assertCount( 1, $media );
 
-		$this->assertSame( 'http://' . WP_TESTS_DOMAIN . '/wp-content/uploads/image.jpg', $media[0]['url'] );
+		$this->assertSame( WP_CONTENT_URL . '/uploads/image.jpg', $media[0]['url'] );
 	}
 
 	public function test_extract_images_from_content_with_galleries_variant_ids() {
-		// To test the [gallery] shortcode, we need to create a post and attachments.
-		$attachment_ids = array();
-		foreach ( range( 1, 3 ) as $i ) {
-			$attachment_id = $this->factory->attachment->create_object( "image{$i}.jpg", 0, array(
-				'post_mime_type' => 'image/jpeg',
-				'post_type'      => 'attachment'
-			) );
-
-			wp_update_attachment_metadata( $attachment_id, array( 'width' => 100, 'height' => 100 ) );
-			$attachment_ids[] = $attachment_id;
-		}
-
-		$attachment_ids = join( ',', $attachment_ids );
-		$post_id        = $this->factory->post->create( array( 'post_content' => "[gallery ids='{$attachment_ids}']" ) );
-
+		$attachment_ids   = array();
+		$attachment_ids[] = $this->fake_attachment_upload( DIR_TESTDATA . '/images/test-image-large.png' );
+		$attachment_ids[] = $this->fake_attachment_upload( DIR_TESTDATA . '/images/canola.jpg' );
+		$attachment_ids   = join( ',', $attachment_ids );
+		$post_id          = self::factory()->post->create( array( 'post_content' => "[gallery ids='{$attachment_ids}']" ) );
 
 		// Extract the gallery images.
 		$media = self::$media_extractor->extract( '', BP_Media_Extractor::IMAGES, array(
@@ -347,15 +334,14 @@ class BP_Tests_Media_Extractor extends BP_UnitTestCase {
 
 		$this->assertArrayHasKey( 'images', $media );
 		$media = array_values( wp_list_filter( $media['images'], array( 'source' => 'galleries' ) ) );
-		$this->assertCount( 3, $media );
+		$this->assertCount( 2, $media );
 
-		for ( $i = 1; $i <= 3; $i++ ) {
-			$this->assertSame( 'http://' . WP_TESTS_DOMAIN . "/wp-content/uploads/image{$i}.jpg", $media[ $i - 1 ]['url'] );
-		}
+		$this->assertSame( WP_CONTENT_URL . '/uploads/test-image-large.png', $media[0]['url'] );
+		$this->assertSame( WP_CONTENT_URL . '/uploads/canola.jpg', $media[1]['url'] );
 	}
 
 	public function test_extract_no_images_from_content_with_invalid_galleries_variant_no_ids() {
-		$post_id = $this->factory->post->create( array( 'post_content' => self::$richtext ) );
+		$post_id = self::factory()->post->create( array( 'post_content' => self::$richtext ) );
 		$media   = self::$media_extractor->extract( self::$richtext, BP_Media_Extractor::IMAGES, array(
 			'post' => get_post( $post_id ),
 		) );
@@ -366,7 +352,7 @@ class BP_Tests_Media_Extractor extends BP_UnitTestCase {
 	}
 
 	public function test_extract_no_images_from_content_with_invalid_galleries_variant_ids() {
-		$post_id = $this->factory->post->create( array( 'post_content' => '[gallery ids="117,4529"]' ) );
+		$post_id = self::factory()->post->create( array( 'post_content' => '[gallery ids="117,4529"]' ) );
 		$media   = self::$media_extractor->extract( '', BP_Media_Extractor::IMAGES, array(
 			'post' => get_post( $post_id ),
 		) );
@@ -382,8 +368,8 @@ class BP_Tests_Media_Extractor extends BP_UnitTestCase {
 	 */
 
 	public function test_extract_no_images_from_content_with_featured_image() {
-		$post_id      = $this->factory->post->create( array( 'post_content' => self::$richtext ) );
-		$thumbnail_id = $this->factory->attachment->create_object( 'image.jpg', $post_id, array(
+		$post_id      = self::factory()->post->create( array( 'post_content' => self::$richtext ) );
+		$thumbnail_id = self::factory()->attachment->create_object( 'image.jpg', $post_id, array(
 			'post_mime_type' => 'image/jpeg',
 			'post_type'      => 'attachment'
 		) );
@@ -399,11 +385,11 @@ class BP_Tests_Media_Extractor extends BP_UnitTestCase {
 		$media = array_values( wp_list_filter( $media['images'], array( 'source' => 'featured_images' ) ) );
 		$this->assertCount( 1, $media );
 
-		$this->assertSame( 'http://' . WP_TESTS_DOMAIN . '/wp-content/uploads/image.jpg', $media[0]['url'] );
+		$this->assertSame( WP_CONTENT_URL . '/uploads/image.jpg', $media[0]['url'] );
 	}
 
 	public function test_extract_images_from_content_without_featured_image() {
-		$post_id = $this->factory->post->create( array( 'post_content' => self::$richtext ) );
+		$post_id = self::factory()->post->create( array( 'post_content' => self::$richtext ) );
 		$media   = self::$media_extractor->extract( '', BP_Media_Extractor::IMAGES, array(
 			'post' => get_post( $post_id ),
 		) );

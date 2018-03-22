@@ -9,26 +9,26 @@ class BP_Tests_Message_Cache extends BP_UnitTestCase {
 	 * @group bp_messages_update_meta_cache
 	 */
 	public function test_bp_messages_update_meta_cache() {
-		$u1 = $this->factory->user->create();
-		$u2 = $this->factory->user->create();
+		$u1 = self::factory()->user->create();
+		$u2 = self::factory()->user->create();
 
 		// create the thread
-		$t1 = $this->factory->message->create( array(
+		$message_1 = self::factory()->message->create_and_get( array(
 			'sender_id'  => $u1,
 			'recipients' => array( $u2 ),
 			'subject'    => 'This is a knive',
 		) );
 
 		// create a reply
-		$this->factory->message->create( array(
-			'thread_id'  => $t1,
+		$message_2 = self::factory()->message->create_and_get( array(
+			'thread_id'  => $message_1->thread_id,
 			'sender_id'  => $u2,
 			'recipients' => array( $u1 ),
 			'content'    => "That's a spoon",
 		) );
 
-		// grab the message ids as individual variables
-		list( $m1, $m2 ) = $this->get_message_ids( $t1 );
+		$m1 = $message_1->id;
+		$m2 = $message_2->id;
 
 		// add cache for each message
 		bp_messages_update_meta( $m1, 'utensil',  'knive' );
@@ -82,27 +82,26 @@ class BP_Tests_Message_Cache extends BP_UnitTestCase {
 	 * @group bp_thread_has_messages
 	 */
 	public function test_bp_messages_metadata_cache_in_message_loop() {
-		$u1 = $this->factory->user->create();
-		$u2 = $this->factory->user->create();
+		$u1 = self::factory()->user->create();
+		$u2 = self::factory()->user->create();
 
-		// create the thread
-		$t1 = $this->factory->message->create( array(
+		// create the message and thread
+		$m = self::factory()->message->create_and_get( array(
 			'sender_id'  => $u1,
 			'recipients' => array( $u2 ),
 			'subject'    => 'Oy',
 		) );
 
 		// add message cache
-		list( $m1 ) = $this->get_message_ids( $t1 );
-		bp_messages_update_meta( $m1, 'yolo', 'gah' );
+		bp_messages_update_meta( $m->id, 'yolo', 'gah' );
 
 		// prime meta cache in message loop
 		bp_thread_has_messages( array(
-			'thread_id' => $t1,
+			'thread_id' => $m->thread_id,
 			'update_meta_cache' => true
 		) );
 
-		$this->assertNotEmpty( wp_cache_get( $m1, 'message_meta' ) );
+		$this->assertNotEmpty( wp_cache_get( $m->id, 'message_meta' ) );
 	}
 
 	/**
@@ -112,26 +111,29 @@ class BP_Tests_Message_Cache extends BP_UnitTestCase {
 	public function test_bp_messages_delete_metadata_cache_on_thread_delete() {
 		$this->old_current_user = get_current_user_id();
 
-		$u1 = $this->factory->user->create();
-		$u2 = $this->factory->user->create();
+		$u1 = self::factory()->user->create();
+		$u2 = self::factory()->user->create();
 
 		// create the thread
-		$t1 = $this->factory->message->create( array(
+		$message_1 = self::factory()->message->create_and_get( array(
 			'sender_id'  => $u1,
 			'recipients' => array( $u2 ),
 			'subject'    => 'Oy',
 		) );
 
 		// create a reply
-		$this->factory->message->create( array(
-			'thread_id'  => $t1,
+		$message_2 = self::factory()->message->create_and_get( array(
+			'thread_id'  => $message_1->thread_id,
 			'sender_id'  => $u2,
 			'recipients' => array( $u1 ),
 			'content'    => 'Yo',
 		) );
 
+		$m1 = $message_1->id;
+		$m2 = $message_2->id;
+		$t1 = $message_1->thread_id;
+
 		// add message meta
-		list( $m1, $m2 ) = $this->get_message_ids( $t1 );
 		bp_messages_update_meta( $m1, 'yolo', 'gah' );
 		bp_messages_update_meta( $m2, 'yolo', 'bah' );
 

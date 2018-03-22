@@ -1,18 +1,23 @@
 <?php
-
 /**
  * Signups Management class.
  *
  * @package BuddyPress
  * @subpackage coreClasses
+ * @since 2.0.0
+ */
+
+/**
+ * Class used to handle Signups.
  *
- * @since BuddyPress (2.0.0)
+ * @since 2.0.0
  */
 class BP_Signup {
 
 	/**
 	 * ID of the signup which the object relates to.
 	 *
+	 * @since 2.0.0
 	 * @var integer
 	 */
 	public $id;
@@ -20,6 +25,7 @@ class BP_Signup {
 	/**
 	 * The URL to the full size of the avatar for the user.
 	 *
+	 * @since 2.0.0
 	 * @var string
 	 */
 	public $avatar;
@@ -27,6 +33,7 @@ class BP_Signup {
 	/**
 	 * The username for the user.
 	 *
+	 * @since 2.0.0
 	 * @var string
 	 */
 	public $user_login;
@@ -34,6 +41,7 @@ class BP_Signup {
 	/**
 	 * The email for the user.
 	 *
+	 * @since 2.0.0
 	 * @var string
 	 */
 	public $user_email;
@@ -41,6 +49,7 @@ class BP_Signup {
 	/**
 	 * The full name of the user.
 	 *
+	 * @since 2.0.0
 	 * @var string
 	 */
 	public $user_name;
@@ -48,6 +57,7 @@ class BP_Signup {
 	/**
 	 * Metadata associated with the signup.
 	 *
+	 * @since 2.0.0
 	 * @var array
 	 */
 	public $meta;
@@ -55,6 +65,7 @@ class BP_Signup {
 	/**
 	 * The registered date for the user.
 	 *
+	 * @since 2.0.0
 	 * @var string
 	 */
 	public $registered;
@@ -62,6 +73,7 @@ class BP_Signup {
 	/**
 	 * The activation key for the user.
 	 *
+	 * @since 2.0.0
 	 * @var string
 	 */
 	public $activation_key;
@@ -72,7 +84,7 @@ class BP_Signup {
 	/**
 	 * Class constructor.
 	 *
-	 * @since BuddyPress (2.0.0)
+	 * @since 2.0.0
 	 *
 	 * @param integer $signup_id The ID for the signup being queried.
 	 */
@@ -86,7 +98,7 @@ class BP_Signup {
 	/**
 	 * Populate the instantiated class with data based on the signup_id provided.
 	 *
-	 * @since BuddyPress (2.0.0)
+	 * @since 2.0.0
 	 */
 	public function populate() {
 		global $wpdb;
@@ -108,12 +120,24 @@ class BP_Signup {
 	/**
 	 * Fetch signups based on parameters.
 	 *
-	 * @since BuddyPress (2.0.0)
+	 * @since 2.0.0
 	 *
-	 * @param array $args the argument to retrieve desired signups
+	 * @param array $args {
+	 *     The argument to retrieve desired signups.
+	 *     @type int         $offset         Offset amount. Default 0.
+	 *     @type int         $number         How many to fetch. Default 1.
+	 *     @type bool|string $usersearch     Whether or not to search for a username. Default false.
+	 *     @type string      $orderby        Order By parameter. Default 'signup_id'.
+	 *     @type string      $order          Order direction. Default 'DESC'.
+	 *     @type bool        $include        Whether or not to include more specific query params.
+	 *     @type string      $activation_key Activation key to search for.
+	 *     @type string      $user_login     Specific user login to return.
+	 *     @type string      $fields         Which fields to return. Specify 'ids' to fetch a list of signups IDs.
+	 *                                       Default: 'all' (return BP_Signup objects).
+	 * }
 	 * @return array {
-	 *     @type array $signups Located signups.
-	 *     @type int $total Total number of signups matching params.
+	 *     @type array $signups Located signups. (IDs only if `fields` is set to `ids`.)
+	 *     @type int   $total   Total number of signups matching params.
 	 * }
 	 */
 	public static function get( $args = array() ) {
@@ -129,6 +153,7 @@ class BP_Signup {
 				'include'        => false,
 				'activation_key' => '',
 				'user_login'     => '',
+				'fields'         => 'all',
 			),
 			'bp_core_signups_get_args'
 		);
@@ -148,18 +173,18 @@ class BP_Signup {
 
 		if ( empty( $r['include'] ) ) {
 
-			// Search terms
+			// Search terms.
 			if ( ! empty( $r['usersearch'] ) ) {
 				$search_terms_like = '%' . bp_esc_like( $r['usersearch'] ) . '%';
 				$sql['where'][]    = $wpdb->prepare( "( user_login LIKE %s OR user_email LIKE %s OR meta LIKE %s )", $search_terms_like, $search_terms_like, $search_terms_like );
 			}
 
-			// Activation key
+			// Activation key.
 			if ( ! empty( $r['activation_key'] ) ) {
 				$sql['where'][] = $wpdb->prepare( "activation_key = %s", $r['activation_key'] );
 			}
 
-			// User login
+			// User login.
 			if ( ! empty( $r['user_login'] ) ) {
 				$sql['where'][] = $wpdb->prepare( "user_login = %s", $r['user_login'] );
 			}
@@ -172,13 +197,13 @@ class BP_Signup {
 			$sql['in'] = "AND signup_id IN ({$in})";
 		}
 
-		// Implode WHERE clauses
+		// Implode WHERE clauses.
 		$sql['where'] = 'WHERE ' . implode( ' AND ', $sql['where'] );
 
 		/**
 		 * Filters the Signups paged query.
 		 *
-		 * @since BuddyPress (2.0.0)
+		 * @since 2.0.0
 		 *
 		 * @param string $value SQL statement.
 		 * @param array  $sql   Array of SQL statement parts.
@@ -191,46 +216,52 @@ class BP_Signup {
 			return array( 'signups' => false, 'total' => false );
 		}
 
-		// Used to calculate a diff between now & last
-		// time an activation link has been resent
-		$now = current_time( 'timestamp', true );
+		// We only want the IDs.
+		if ( 'ids' === $r['fields'] ) {
+			$paged_signups = wp_list_pluck( $paged_signups, 'signup_id' );
+		} else {
 
-		foreach ( (array) $paged_signups as $key => $signup ) {
+			// Used to calculate a diff between now & last
+			// time an activation link has been resent.
+			$now = current_time( 'timestamp', true );
 
-			$signup->id   = intval( $signup->signup_id );
+			foreach ( (array) $paged_signups as $key => $signup ) {
 
-			$signup->meta = ! empty( $signup->meta ) ? maybe_unserialize( $signup->meta ) : false;
+				$signup->id   = intval( $signup->signup_id );
 
-			$signup->user_name = '';
-			if ( ! empty( $signup->meta['field_1'] ) ) {
-				$signup->user_name = wp_unslash( $signup->meta['field_1'] );
+				$signup->meta = ! empty( $signup->meta ) ? maybe_unserialize( $signup->meta ) : false;
+
+				$signup->user_name = '';
+				if ( ! empty( $signup->meta['field_1'] ) ) {
+					$signup->user_name = wp_unslash( $signup->meta['field_1'] );
+				}
+
+				// Sent date defaults to date of registration.
+				if ( ! empty( $signup->meta['sent_date'] ) ) {
+					$signup->date_sent = $signup->meta['sent_date'];
+				} else {
+					$signup->date_sent = $signup->registered;
+				}
+
+				$sent_at = mysql2date('U', $signup->date_sent );
+				$diff    = $now - $sent_at;
+
+				/**
+				 * Add a boolean in case the last time an activation link
+				 * has been sent happened less than a day ago.
+				 */
+				if ( $diff < 1 * DAY_IN_SECONDS ) {
+					$signup->recently_sent = true;
+				}
+
+				if ( ! empty( $signup->meta['count_sent'] ) ) {
+					$signup->count_sent = absint( $signup->meta['count_sent'] );
+				} else {
+					$signup->count_sent = 1;
+				}
+
+				$paged_signups[ $key ] = $signup;
 			}
-
-			// Sent date defaults to date of registration
-			if ( ! empty( $signup->meta['sent_date'] ) ) {
-				$signup->date_sent = $signup->meta['sent_date'];
-			} else {
-				$signup->date_sent = $signup->registered;
-			}
-
-			$sent_at = mysql2date('U', $signup->date_sent );
-			$diff    = $now - $sent_at;
-
-			/**
-			 * add a boolean in case the last time an activation link
-			 * has been sent happened less than a day ago
-			 */
-			if ( $diff < 1 * DAY_IN_SECONDS ) {
-				$signup->recently_sent = true;
-			}
-
-			if ( ! empty( $signup->meta['count_sent'] ) ) {
-				$signup->count_sent = absint( $signup->meta['count_sent'] );
-			} else {
-				$signup->count_sent = 1;
-			}
-
-			$paged_signups[ $key ] = $signup;
 		}
 
 		unset( $sql['limit'] );
@@ -239,7 +270,7 @@ class BP_Signup {
 		/**
 		 * Filters the Signups count query.
 		 *
-		 * @since BuddyPress (2.0.0)
+		 * @since 2.0.0
 		 *
 		 * @param string $value SQL statement.
 		 * @param array  $sql   Array of SQL statement parts.
@@ -254,11 +285,20 @@ class BP_Signup {
 	/**
 	 * Add a signup.
 	 *
-	 * @since BuddyPress (2.0.0)
+	 * @since 2.0.0
 	 *
-	 * @param array $args
-	 * @return int|bool ID of newly created signup on success, false on
-	 *         failure.
+	 * @param array $args {
+	 *     Array of arguments for signup addition.
+	 *     @type string     $domain         New user's domain.
+	 *     @type string     $path           New user's path.
+	 *     @type string     $title          New user's title.
+	 *     @type string     $user_login     New user's user_login.
+	 *     @type string     $user_email     New user's email address.
+	 *     @type int|string $registered     Time the user registered.
+	 *     @type string     $activation_key New user's activation key.
+	 *     @type string     $meta           New user's user meta.
+	 * }
+	 * @return int|bool ID of newly created signup on success, false on failure.
 	 */
 	public static function add( $args = array() ) {
 		global $wpdb;
@@ -294,7 +334,7 @@ class BP_Signup {
 		/**
 		 * Filters the result of a signup addition.
 		 *
-		 * @since BuddyPress (2.0.0)
+		 * @since 2.0.0
 		 *
 		 * @param int|bool $retval Newly added user ID on success, false on failure.
 		 */
@@ -311,12 +351,12 @@ class BP_Signup {
 	 * mirror signups there by creating "phantom" users, mimicking WP's
 	 * default behavior.
 	 *
-	 * @since BuddyPress (2.0.0)
+	 * @since 2.0.0
 	 *
-	 * @param string $user_login User login string.
+	 * @param string $user_login    User login string.
 	 * @param string $user_password User password.
-	 * @param string $user_email User email address.
-	 * @param array $usermeta Metadata associated with the signup.
+	 * @param string $user_email    User email address.
+	 * @param array  $usermeta      Metadata associated with the signup.
 	 * @return int User id.
 	 */
 	public static function add_backcompat( $user_login = '', $user_password = '', $user_email = '', $usermeta = array() ) {
@@ -334,7 +374,7 @@ class BP_Signup {
 		}
 
 		// Update the user status to '2', ie "not activated"
-		// (0 = active, 1 = spam, 2 = not active)
+		// (0 = active, 1 = spam, 2 = not active).
 		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->users} SET user_status = 2 WHERE ID = %d", $user_id ) );
 
 		// WordPress creates these options automatically on
@@ -343,7 +383,7 @@ class BP_Signup {
 		delete_user_option( $user_id, 'capabilities' );
 		delete_user_option( $user_id, 'user_level'   );
 
-		// Set any profile data
+		// Set any profile data.
 		if ( bp_is_active( 'xprofile' ) ) {
 			if ( ! empty( $usermeta['profile_field_ids'] ) ) {
 				$profile_field_ids = explode( ',', $usermeta['profile_field_ids'] );
@@ -356,8 +396,19 @@ class BP_Signup {
 					$current_field = $usermeta["field_{$field_id}"];
 					xprofile_set_field_data( $field_id, $user_id, $current_field );
 
-					// Save the visibility level
-					$visibility_level = ! empty( $usermeta['field_' . $field_id . '_visibility'] ) ? $usermeta['field_' . $field_id . '_visibility'] : 'public';
+					/*
+					 * Save the visibility level.
+					 *
+					 * Use the field's default visibility if not present, and 'public' if a
+					 * default visibility is not defined.
+					 */
+					$key = "field_{$field_id}_visibility";
+					if ( isset( $usermeta[ $key ] ) ) {
+						$visibility_level = $usermeta[ $key ];
+					} else {
+						$vfield           = xprofile_get_field( $field_id );
+						$visibility_level = isset( $vfield->default_visibility ) ? $vfield->default_visibility : 'public';
+					}
 					xprofile_set_field_visibility_level( $field_id, $user_id, $visibility_level );
 				}
 			}
@@ -366,7 +417,7 @@ class BP_Signup {
 		/**
 		 * Filters the user ID for the backcompat functionality.
 		 *
-		 * @since BuddyPress (2.0.0)
+		 * @since 2.0.0
 		 *
 		 * @param int $user_id User ID being registered.
 		 */
@@ -376,7 +427,7 @@ class BP_Signup {
 	/**
 	 * Check a user status (from wp_users) on a non-multisite config.
 	 *
-	 * @since BuddyPress (2.0.0)
+	 * @since 2.0.0
 	 *
 	 * @param int $user_id ID of the user being checked.
 	 * @return int|bool The status if found, otherwise false.
@@ -393,7 +444,7 @@ class BP_Signup {
 		/**
 		 * Filters the user status of a provided user ID.
 		 *
-		 * @since BuddyPress (2.0.0)
+		 * @since 2.0.0
 		 *
 		 * @param int $value User status of the provided user ID.
 		 */
@@ -403,7 +454,7 @@ class BP_Signup {
 	/**
 	 * Activate a signup.
 	 *
-	 * @since BuddyPress (2.0.0)
+	 * @since 2.0.0
 	 *
 	 * @param string $key Activation key.
 	 * @return bool True on success, false on failure.
@@ -416,7 +467,7 @@ class BP_Signup {
 		}
 
 		$activated = $wpdb->update(
-			// Signups table
+			// Signups table.
 			buddypress()->members->table_name_signups,
 			array(
 				'active' => 1,
@@ -425,12 +476,12 @@ class BP_Signup {
 			array(
 				'activation_key' => $key,
 			),
-			// Data sanitization format
+			// Data sanitization format.
 			array(
 				'%d',
 				'%s',
 			),
-			// WHERE sanitization format
+			// WHERE sanitization format.
 			array(
 				'%s',
 			)
@@ -439,7 +490,7 @@ class BP_Signup {
 		/**
 		 * Filters the status of the activated user.
 		 *
-		 * @since BuddyPress (2.0.0)
+		 * @since 2.0.0
 		 *
 		 * @param bool $activated Whether or not the activation was successful.
 		 */
@@ -449,9 +500,9 @@ class BP_Signup {
 	/**
 	 * How many inactive signups do we have?
 	 *
-	 * @since BuddyPress (2.0.0)
+	 * @since 2.0.0
 	 *
-	 * @return int the number of signups
+	 * @return int The number of signups.
 	 */
 	public static function count_signups() {
 		global $wpdb;
@@ -462,7 +513,7 @@ class BP_Signup {
 		/**
 		 * Filters the total inactive signups.
 		 *
-		 * @since BuddyPress (2.0.0)
+		 * @since 2.0.0
 		 *
 		 * @param int $count_signups How many total signups there are.
 		 */
@@ -475,10 +526,14 @@ class BP_Signup {
 	 * This is the way we use to "trace" the last date an activation
 	 * email was sent and how many times activation was sent.
 	 *
-	 * @since BuddyPress (2.0.0)
+	 * @since 2.0.0
 	 *
-	 * @param  array $args
-	 * @return int the signup id
+	 * @param array $args {
+	 *     Array of arguments for the signup update.
+	 *     @type int $signup_id User signup ID.
+	 *     @type array $meta Meta to update.
+	 * }
+	 * @return int The signup id.
 	 */
 	public static function update( $args = array() ) {
 		global $wpdb;
@@ -496,21 +551,21 @@ class BP_Signup {
 		}
 
 		$wpdb->update(
-			// Signups table
+			// Signups table.
 			buddypress()->members->table_name_signups,
-			// Data to update
+			// Data to update.
 			array(
 				'meta' => serialize( $r['meta'] ),
 			),
-			// WHERE
+			// WHERE.
 			array(
 				'signup_id' => $r['signup_id'],
 			),
-			// Data sanitization format
+			// Data sanitization format.
 			array(
 				'%s',
 			),
-			// WHERE sanitization format
+			// WHERE sanitization format.
 			array(
 				'%d',
 			)
@@ -519,7 +574,7 @@ class BP_Signup {
 		/**
 		 * Filters the signup ID which received a meta update.
 		 *
-		 * @since BuddyPress (2.0.0)
+		 * @since 2.0.0
 		 *
 		 * @param int $value The signup ID.
 		 */
@@ -529,7 +584,7 @@ class BP_Signup {
 	/**
 	 * Resend an activation email.
 	 *
-	 * @since BuddyPress (2.0.0)
+	 * @since 2.0.0
 	 *
 	 * @param array $signup_ids Single ID or list of IDs to resend.
 	 * @return array
@@ -552,7 +607,7 @@ class BP_Signup {
 		/**
 		 * Fires before activation emails are resent.
 		 *
-		 * @since BuddyPress (2.0.0)
+		 * @since 2.0.0
 		 *
 		 * @param array $signup_ids Array of IDs to resend activation emails to.
 		 */
@@ -564,31 +619,31 @@ class BP_Signup {
 			$meta['sent_date']  = current_time( 'mysql', true );
 			$meta['count_sent'] = $signup->count_sent + 1;
 
-			// Send activation email
+			// Send activation email.
 			if ( is_multisite() ) {
 				wpmu_signup_user_notification( $signup->user_login, $signup->user_email, $signup->activation_key, serialize( $meta ) );
 			} else {
 
-				// Check user status before sending email
+				// Check user status before sending email.
 				$user_id = email_exists( $signup->user_email );
 
 				if ( ! empty( $user_id ) && 2 != self::check_user_status( $user_id ) ) {
 
-					// Status is not 2, so user's account has been activated
+					// Status is not 2, so user's account has been activated.
 					$result['errors'][ $signup->signup_id ] = array( $signup->user_login, esc_html__( 'the sign-up has already been activated.', 'buddypress' ) );
 
-					// repair signups table
+					// Repair signups table.
 					self::validate( $signup->activation_key );
 
 					continue;
 
-				// Send the validation email
+				// Send the validation email.
 				} else {
-					bp_core_signup_send_validation_email( false, $signup->user_email, $signup->activation_key );
+					bp_core_signup_send_validation_email( false, $signup->user_email, $signup->activation_key, $signup->user_login );
 				}
 			}
 
-			// Update metas
+			// Update metas.
 			$result['resent'][] = self::update( array(
 				'signup_id' => $signup->signup_id,
 				'meta'      => $meta,
@@ -598,7 +653,7 @@ class BP_Signup {
 		/**
 		 * Fires after activation emails are resent.
 		 *
-		 * @since BuddyPress (2.0.0)
+		 * @since 2.0.0
 		 *
 		 * @param array $signup_ids Array of IDs to resend activation emails to.
 		 * @param array $result     Updated metadata related to activation emails.
@@ -608,7 +663,7 @@ class BP_Signup {
 		/**
 		 * Filters the result of the metadata for signup activation email resends.
 		 *
-		 * @since BuddyPress (2.0.0)
+		 * @since 2.0.0
 		 *
 		 * @param array $result Updated metadata related to activation emails.
 		 */
@@ -618,7 +673,7 @@ class BP_Signup {
 	/**
 	 * Activate a pending account.
 	 *
-	 * @since BuddyPress (2.0.0)
+	 * @since 2.0.0
 	 *
 	 * @param array $signup_ids Single ID or list of IDs to activate.
 	 * @return array
@@ -641,7 +696,7 @@ class BP_Signup {
 		/**
 		 * Fires before activation of user accounts.
 		 *
-		 * @since BuddyPress (2.0.0)
+		 * @since 2.0.0
 		 *
 		 * @param array $signup_ids Array of IDs to activate.
 		 */
@@ -661,13 +716,13 @@ class BP_Signup {
 
 				if ( empty( $user_id ) ) {
 
-					// Status is not 2, so user's account has been activated
+					// Status is not 2, so user's account has been activated.
 					$result['errors'][ $signup->signup_id ] = array( $signup->user_login, esc_html__( 'the sign-up has already been activated.', 'buddypress' ) );
 
-					// repair signups table
+					// Repair signups table.
 					self::validate( $signup->activation_key );
 
-				// we have a user id, account is not active, let's delete it
+				// We have a user id, account is not active, let's delete it.
 				} else {
 					$result['errors'][ $signup->signup_id ] = array( $signup->user_login, $user->get_error_message() );
 				}
@@ -680,7 +735,7 @@ class BP_Signup {
 		/**
 		 * Fires after activation of user accounts.
 		 *
-		 * @since BuddyPress (2.0.0)
+		 * @since 2.0.0
 		 *
 		 * @param array $signup_ids Array of IDs activated activate.
 		 * @param array $result     Array of data for activated accounts.
@@ -690,7 +745,7 @@ class BP_Signup {
 		/**
 		 * Filters the result of the metadata after user activation.
 		 *
-		 * @since BuddyPress (2.0.0)
+		 * @since 2.0.0
 		 *
 		 * @param array $result Updated metadata related to user activation.
 		 */
@@ -700,7 +755,7 @@ class BP_Signup {
 	/**
 	 * Delete a pending account.
 	 *
-	 * @since BuddyPress (2.0.0)
+	 * @since 2.0.0
 	 *
 	 * @param array $signup_ids Single ID or list of IDs to delete.
 	 * @return array
@@ -725,7 +780,7 @@ class BP_Signup {
 		/**
 		 * Fires before deletion of pending accounts.
 		 *
-		 * @since BuddyPress (2.0.0)
+		 * @since 2.0.0
 		 *
 		 * @param array $signup_ids Array of pending IDs to delete.
 		 */
@@ -734,17 +789,17 @@ class BP_Signup {
 		foreach ( $signups as $signup ) {
 			$user_id = username_exists( $signup->user_login );
 
-			if ( ! empty( $user_id ) && $signup->activation_key == wp_hash( $user_id ) ) {
+			if ( ! empty( $user_id ) && $signup->activation_key === bp_get_user_meta( $user_id, 'activation_key', true ) ) {
 
 				if ( 2 != self::check_user_status( $user_id ) ) {
 
-					// Status is not 2, so user's account has been activated
+					// Status is not 2, so user's account has been activated.
 					$result['errors'][ $signup->signup_id ] = array( $signup->user_login, esc_html__( 'the sign-up has already been activated.', 'buddypress' ) );
 
-					// repair signups table
+					// Repair signups table.
 					self::validate( $signup->activation_key );
 
-				// we have a user id, account is not active, let's delete it
+				// We have a user id, account is not active, let's delete it.
 				} else {
 					bp_core_delete_account( $user_id );
 				}
@@ -752,11 +807,11 @@ class BP_Signup {
 
 			if ( empty( $result['errors'][ $signup->signup_id ] ) ) {
 				$wpdb->delete(
-					// Signups table
+					// Signups table.
 					buddypress()->members->table_name_signups,
-					// Where
+					// Where.
 					array( 'signup_id' => $signup->signup_id, ),
-					// WHERE sanitization format
+					// WHERE sanitization format.
 					array( '%d', )
 				);
 
@@ -767,7 +822,7 @@ class BP_Signup {
 		/**
 		 * Fires after deletion of pending accounts.
 		 *
-		 * @since BuddyPress (2.0.0)
+		 * @since 2.0.0
 		 *
 		 * @param array $signup_ids Array of pending IDs to delete.
 		 * @param array $result     Array of data for deleted accounts.
@@ -777,7 +832,7 @@ class BP_Signup {
 		/**
 		 * Filters the result of the metadata for deleted pending accounts.
 		 *
-		 * @since BuddyPress (2.0.0)
+		 * @since 2.0.0
 		 *
 		 * @param array $result Updated metadata related to deleted pending accounts.
 		 */

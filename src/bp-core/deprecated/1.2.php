@@ -11,12 +11,10 @@
  *
  * You should use bp_activity_get() instead
  *
- * @since BuddyPress (1.0)
- * @deprecated BuddyPress (1.2)
+ * @since 1.0.0
+ * @deprecated 1.2.0
  *
- * @param array $args
- *
- * @uses BP_Activity_Activity::get() {@link BP_Activity_Activity}
+ * @param string|array $args
  *
  * @return object $activity The activity/activities object
  */

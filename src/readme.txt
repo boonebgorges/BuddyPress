@@ -1,13 +1,14 @@
 === BuddyPress ===
-Contributors: johnjamesjacoby, DJPaul, boonebgorges, r-a-y, imath, mercime, tw2113, dcavins,
-Tags: social networking, activity, profiles, messaging, friends, groups, forums, notifications, settings, social, community, networks, networking
-Requires at least: 3.6
-Tested up to: 4.1
-Stable tag: 2.2.1
+Contributors: johnjamesjacoby, DJPaul, boonebgorges, r-a-y, imath, mercime, tw2113, dcavins, hnla
+Tags: social networking, activity, profiles, messaging, friends, groups, notifications, settings, social, community, networks, networking
+Requires at least: 4.5
+Tested up to: 4.9
+Requires PHP: 5.3
+Stable tag: 2.9.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-BuddyPress helps you run any kind of social network on your WordPress, with member profiles, activity streams, user groups, messaging, and more.
+BuddyPress adds community features to WordPress. Member Profiles, Activity Streams, Direct Messaging, Notifications, and more!
 
 == Description ==
 
@@ -19,7 +20,7 @@ Enable registered members to create profiles, have private conversations, make c
 
 = Extensions =
 
-BuddyPress has an ever-increasing array of extended features developed by an active and thriving plugin development community, with hundreds of free-and-open BuddyPress-compatible plugins available. We list them on both <a href="https://buddypress.org/extend/recommended-plugins/">our plugin directory</a> and <a href="https://wordpress.org/plugins/search.php?q=buddypress">WordPress.org</a>. Any plugin can be conveniently installed using the plugin installer in your WordPress Dashboard.
+BuddyPress has an ever-increasing array of extended features developed by an active and thriving plugin development community, with hundreds of free-and-open BuddyPress-compatible plugins available at <a href="https://wordpress.org/plugins/search.php?q=buddypress">WordPress.org</a>. Any plugin can be conveniently installed using the plugin installer in your WordPress Dashboard.
 
 = More Information =
 
@@ -81,8 +82,6 @@ Yes! If your WordPress installation has multisite enabled, BuddyPress will suppo
 
 Our community provides free support at <a href="https://buddypress.org/support/">https://buddypress.org/support/</a>.
 
-For dedicated consultations, see our <a href="https://buddypress.org/consulting/">unofficial list</a> of freelancers, contractors, and agencies offering BuddyPress services.
-
 = Where can I find documentation? =
 
 Our codex can be found at <a href="https://codex.buddypress.org/">https://codex.buddypress.org/</a>.
@@ -114,128 +113,14 @@ BuddyPress is free software, built by an international community of volunteers. 
 
 BuddyPress is available in many languages thanks to the volunteer efforts of individuals all around the world. Check out our <a href="https://codex.buddypress.org/translations/">translations page</a> on the BuddyPress Codex for more details.
 
-Please consider helping translate BuddyPress at our <a href="https://translate.wordpress.org/projects/buddypress">GlotPress project</a>. Growing the BuddyPress community means better software for everyone!
+Please consider helping translate BuddyPress at our <a href="https://translate.wordpress.org/projects/wp-plugins/buddypress">GlotPress project</a>. Growing the BuddyPress community means better software for everyone!
 
 == Upgrade Notice ==
 
-= 2.2.1 =
-See: https://codex.buddypress.org/releases/version-2-2-1/
-
-= 2.2 =
-See: https://codex.buddypress.org/releases/version-2-2/
-
-= 2.1 =
-See: https://codex.buddypress.org/releases/version-2-1/
-
-= 2.0.3 =
-See: https://codex.buddypress.org/releases/version-2-0-3/
-
-= 2.0.2 =
-See: https://codex.buddypress.org/releases/version-2-0-2/
-
-= 2.0.1 =
-See: https://codex.buddypress.org/releases/version-2-0-1/
-
-= 2.0 =
-See: https://codex.buddypress.org/releases/version-2-0/
-
-= 1.9.2 =
-See: https://codex.buddypress.org/releases/version-1-9-2/
-
-= 1.9.1 =
-See: https://codex.buddypress.org/releases/version-1-9-1/
-
-= 1.9 =
-See: https://codex.buddypress.org/releases/version-1-9/
-
-= 1.8.1 =
-See: https://codex.buddypress.org/releases/version-1-8-1/
-
-= 1.8 =
-See: https://codex.buddypress.org/releases/version-1-8/
-
-= 1.7.3 =
-See: https://codex.buddypress.org/releases/version-1-7-3/
-
-= 1.7.2 =
-See: https://codex.buddypress.org/releases/version-1-7-2/
-
-= 1.7.1 =
-See: https://codex.buddypress.org/releases/version-1-7-1/
-
-= 1.7 =
-See: https://codex.buddypress.org/releases/version-1-7/
-
-= 1.6.5 =
-See: https://codex.buddypress.org/releases/version-1-6-5/
-
-= 1.6.4 =
-See: https://codex.buddypress.org/releases/version-1-6-4/
-
-= 1.6.3 =
-See: https://codex.buddypress.org/releases/version-1-6-3/
-
-= 1.6.2 =
-Compatibility with WordPress 3.5
-
-= 1.6.1 =
-Fixes 4 bugs
-
-= 1.6 =
-See: https://codex.buddypress.org/releases/version-1-6/
-
-= 1.5 =
-See: https://codex.buddypress.org/releases/version-1-5/
-
-= 1.2.9 =
-Compatibility with WordPress 3.2
-
-= 1.2.8 =
-Compatibility with WordPress 3.1
-
-= 1.2.7 =
-Fixes over 10 bugs.
+= 2.9.0 =
+See: https://codex.buddypress.org/releases/version-2-9-0/
 
 == Changelog ==
 
-= 2.2.1 =
-See: https://codex.buddypress.org/releases/version-2-2-1/
-
-= 2.2 =
-See: https://codex.buddypress.org/releases/version-2-2/
-
-= 2.1 =
-See: https://codex.buddypress.org/releases/version-2-1/
-
-= 2.0.3 =
-See: https://codex.buddypress.org/releases/version-2-0-3/
-
-= 2.0.2 =
-See: https://codex.buddypress.org/releases/version-2-0-2/
-
-= 2.0.1 =
-See: https://codex.buddypress.org/releases/version-2-0-1/
-
-= 2.0 =
-See: https://codex.buddypress.org/releases/version-2-0/
-
-= 1.9 =
-See: https://codex.buddypress.org/releases/version-1-9/
-
-= 1.8.1 =
-See: https://codex.buddypress.org/releases/version-1-8-1/
-
-= 1.8 =
-See: https://codex.buddypress.org/releases/version-1-8/
-
-= 1.7 =
-See: https://codex.buddypress.org/releases/version-1-7/
-
-= 1.6 =
-See: https://codex.buddypress.org/releases/version-1-6/
-
-= 1.5 =
-See: https://codex.buddypress.org/releases/version-1-5/
-
-= Older =
-See: https://codex.buddypress.org/releases/
+= 2.9.0 =
+See: https://codex.buddypress.org/releases/version-2-9-0/

@@ -9,10 +9,9 @@ class BP_Tests_XProfile_Cache extends BP_UnitTestCase {
 	 * @group bp_xprofile_update_meta_cache
 	 */
 	public function test_bp_xprofile_update_meta_cache() {
-		$u = $this->factory->user->create();
-		$g = $this->factory->xprofile_group->create();
-		$f = $this->factory->xprofile_field->create( array(
-			'type' => 'textbox',
+		$u = self::factory()->user->create();
+		$g = self::factory()->xprofile_group->create();
+		$f = self::factory()->xprofile_field->create( array(
 			'field_group_id' => $g,
 		) );
 
@@ -64,10 +63,9 @@ class BP_Tests_XProfile_Cache extends BP_UnitTestCase {
 	 * @group bp_has_profile
 	 */
 	public function test_bp_has_profile_meta_cache() {
-		$u = $this->factory->user->create();
-		$g = $this->factory->xprofile_group->create();
-		$f = $this->factory->xprofile_field->create( array(
-			'type' => 'textbox',
+		$u = self::factory()->user->create();
+		$g = self::factory()->xprofile_group->create();
+		$f = self::factory()->xprofile_field->create( array(
 			'field_group_id' => $g,
 		) );
 
@@ -118,10 +116,9 @@ class BP_Tests_XProfile_Cache extends BP_UnitTestCase {
 	 * @group bp_has_profile
 	 */
 	public function test_bp_has_profile_meta_cache_update_meta_cache_false() {
-		$u = $this->factory->user->create();
-		$g = $this->factory->xprofile_group->create();
-		$f = $this->factory->xprofile_field->create( array(
-			'type' => 'textbox',
+		$u = self::factory()->user->create();
+		$g = self::factory()->xprofile_group->create();
+		$f = self::factory()->xprofile_field->create( array(
 			'field_group_id' => $g,
 		) );
 
@@ -146,5 +143,95 @@ class BP_Tests_XProfile_Cache extends BP_UnitTestCase {
 		$this->assertFalse( wp_cache_get( $g, 'xprofile_group_meta' ) );
 		$this->assertFalse( wp_cache_get( $f, 'xprofile_field_meta' ) );
 		$this->assertFalse( wp_cache_get( $d->id, 'xprofile_data_meta' ) );
+	}
+
+	/**
+	 * @ticket BP6638
+	 */
+	public function test_field_cache_should_be_invalidated_on_save() {
+		$g = self::factory()->xprofile_group->create();
+		$f = self::factory()->xprofile_field->create( array(
+			'field_group_id' => $g,
+			'name' => 'Foo',
+		) );
+
+		$field = xprofile_get_field( $f );
+		$this->assertSame( 'Foo', $field->name );
+
+		$field->name = 'Bar';
+		$this->assertNotEmpty( $field->save() );
+
+		$field_2 = xprofile_get_field( $f );
+		$this->assertSame( 'Bar', $field_2->name );
+	}
+
+	/**
+	 * @ticket BP7407
+	 */
+	public function test_get_field_id_from_name_should_be_cached() {
+		global $wpdb;
+
+		$g = self::factory()->xprofile_group->create();
+		$f = self::factory()->xprofile_field->create( array(
+			'field_group_id' => $g,
+			'name' => 'Foo',
+		) );
+
+		// Prime cache.
+		BP_XProfile_Field::get_id_from_name( 'Foo' );
+
+		$num_queries = $wpdb->num_queries;
+
+		$this->assertSame( $f, BP_XProfile_Field::get_id_from_name( 'Foo' ) );
+		$this->assertSame( $num_queries, $wpdb->num_queries );
+	}
+
+	/**
+	 * @ticket BP7407
+	 */
+	public function test_get_field_id_from_name_cache_should_be_invalidated_on_field_update() {
+		$g = self::factory()->xprofile_group->create();
+		$f1 = self::factory()->xprofile_field->create( array(
+			'field_group_id' => $g,
+			'name' => 'Foo',
+		) );
+		$f2 = self::factory()->xprofile_field->create( array(
+			'field_group_id' => $g,
+			'name' => 'Bar',
+		) );
+
+		// Prime cache.
+		xprofile_get_field_id_from_name( 'Foo' );
+		xprofile_get_field_id_from_name( 'Bar' );
+
+		// Free up the name 'Bar'.
+		$field2 = xprofile_get_field( $f2 );
+		$field2->name = 'Quz';
+		$field2->save();
+
+		// Take the name 'Bar'.
+		$field1 = xprofile_get_field( $f1 );
+		$field1->name = 'Bar';
+		$field1->save();
+
+		$this->assertSame( $f1, BP_XProfile_Field::get_id_from_name( 'Bar' ) );
+	}
+
+	/**
+	 * @ticket BP7407
+	 */
+	public function test_get_field_id_from_name_cache_should_be_invalidated_on_field_deletion() {
+		$g = self::factory()->xprofile_group->create();
+		$f = self::factory()->xprofile_field->create( array(
+			'field_group_id' => $g,
+			'name' => 'Foo',
+		) );
+
+		// Prime cache.
+		xprofile_get_field_id_from_name( 'Foo' );
+
+		xprofile_delete_field( $f );
+
+		$this->assertNull( BP_XProfile_Field::get_id_from_name( 'Bar' ) );
 	}
 }

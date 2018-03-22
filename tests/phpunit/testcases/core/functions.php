@@ -256,6 +256,13 @@ class BP_Tests_Core_Functions extends BP_UnitTestCase {
 	}
 
 	/**
+	 * @group bp_core_get_iso8601_date
+	 */
+	public function test_bp_core_get_iso8601_date_invalid_date() {
+		$this->assertEquals( '', bp_core_get_iso8601_date( 'Not a date' ) );
+	}
+
+	/**
 	 * @group bp_sort_by_key
 	 */
 	public function test_bp_sort_by_key_arrays_num() {
@@ -429,6 +436,80 @@ class BP_Tests_Core_Functions extends BP_UnitTestCase {
 	}
 
 	/**
+	 * @group bp_sort_by_key
+	 */
+	public function test_bp_sort_by_key_arrays_num_preserve_keys() {
+		$items = array(
+			'p' => array(
+				'foo' => 'bar',
+				'value' => 5,
+			),
+			'q' => array(
+				'foo' => 'bar',
+				'value' => 10,
+			),
+			'r' => array(
+				'foo' => 'bar',
+				'value' => 1,
+			),
+		);
+
+		$expected = array(
+			'r' => array(
+				'foo' => 'bar',
+				'value' => 1,
+			),
+			'p' => array(
+				'foo' => 'bar',
+				'value' => 5,
+			),
+			'q' => array(
+				'foo' => 'bar',
+				'value' => 10,
+			),
+		);
+
+		$this->assertEquals( $expected, bp_sort_by_key( $items, 'value', 'num', true ) );
+	}
+
+	/**
+	 * @group bp_sort_by_key
+	 */
+	public function test_bp_sort_by_key_num_should_respect_0_preserve_keys() {
+		$items = array(
+			's' => array(
+				'foo' => 'bar',
+				'value' => 2,
+			),
+			't' => array(
+				'foo' => 'bar',
+				'value' => 0,
+			),
+			'u' => array(
+				'foo' => 'bar',
+				'value' => 4,
+			),
+		);
+
+		$expected = array(
+			't' => array(
+				'foo' => 'bar',
+				'value' => 0,
+			),
+			's' => array(
+				'foo' => 'bar',
+				'value' => 2,
+			),
+			'u' => array(
+				'foo' => 'bar',
+				'value' => 4,
+			),
+		);
+
+		$this->assertEquals( $expected, bp_sort_by_key( $items, 'value', 'num', true ) );
+	}
+
+	/**
 	 * @group pagination
 	 * @group bp_sanitize_pagination_arg
 	 */
@@ -521,6 +602,32 @@ class BP_Tests_Core_Functions extends BP_UnitTestCase {
 	}
 
 	/**
+	 * @group bp_core_get_root_option
+	 */
+	public function test_bp_core_get_root_option_with_unpopulated_cache() {
+		// Back up and unset global cache.
+		$old_options = buddypress()->site_options;
+		unset( buddypress()->site_options );
+
+		$this->assertSame( $old_options['avatar_default'], bp_core_get_root_option( 'avatar_default' ) );
+
+		// Clean up.
+		buddypress()->site_options = $old_options;
+	}
+
+	/**
+	 * @group bp_core_get_root_option
+	 */
+	public function test_bp_core_get_root_option_with_populated_cache() {
+		// Back up and unset global cache.
+		$old_options = buddypress()->site_options;
+		buddypress()->site_options = bp_core_get_root_options();
+		$expected = buddypress()->site_options['avatar_default'];
+
+		$this->assertSame( $expected, bp_core_get_root_option( 'avatar_default' ) );
+	}
+
+	/**
 	 * @group bp_core_add_root_component
 	 */
 	public function test_add_root_component_not_in_bp_pages() {
@@ -571,5 +678,161 @@ class BP_Tests_Core_Functions extends BP_UnitTestCase {
 		if ( $tz_backup ) {
 			date_default_timezone_set( $tz_backup );
 		}
+	}
+
+	/**
+	 * @group bp_core_time_since
+	 */
+	public function test_bp_core_time_since_mysql_and_unix_timestamp_return_same_value() {
+		$mysql_date   = '2008-03-25 17:13:55';
+
+		$ts_mysql     = bp_core_time_since( $mysql_date );
+		$ts_timestamp = bp_core_time_since( strtotime( $mysql_date ) );
+
+		$this->assertSame( $ts_mysql, $ts_timestamp );
+	}
+
+	/**
+	 * @group bp_attachments
+	 * @group bp_upload_dir
+	 */
+	public function test_bp_upload_dir() {
+		$expected_upload_dir = wp_upload_dir();
+
+		if ( is_multisite() ) {
+			$b = self::factory()->blog->create();
+			switch_to_blog( $b );
+		}
+
+		$tested_upload_dir = bp_upload_dir();
+
+		if ( is_multisite() ) {
+			restore_current_blog();
+		}
+
+		$this->assertSame( $expected_upload_dir, $tested_upload_dir );
+	}
+
+	/**
+	 * @group bp_is_active
+	 */
+	public function test_bp_is_active_component() {
+		$bp = buddypress();
+		$reset_active_components = $bp->active_components;
+
+		$this->assertTrue( bp_is_active( 'members' ) );
+
+		$this->assertFalse( bp_is_active( 'foo' ) );
+
+		// Create and activate the foo component
+		$bp->foo = new BP_Component;
+		$bp->foo->id   = 'foo';
+		$bp->foo->slug = 'foo';
+		$bp->foo->name = 'Foo';
+		$bp->active_components[ $bp->foo->id ] = 1;
+
+		$this->assertTrue( bp_is_active( 'foo' ) );
+
+		add_filter( 'bp_is_active', '__return_false' );
+
+		$this->assertFalse( bp_is_active( 'foo' ) );
+
+		remove_filter( 'bp_is_active', '__return_false' );
+
+		// Reset buddypress() vars
+		$bp->active_components = $reset_active_components;
+	}
+
+	/**
+	 * @group bp_is_active
+	 */
+	public function test_bp_is_active_feature() {
+		$bp = buddypress();
+		$reset_active_components = $bp->active_components;
+
+		// Create and activate the foo component
+		$bp->foo = new BP_Component;
+		$bp->foo->id   = 'foo';
+		$bp->foo->slug = 'foo';
+		$bp->foo->name = 'Foo';
+		$bp->active_components[ $bp->foo->id ] = 1;
+
+		// foo did not register 'bar' as a feature
+		$this->assertFalse( bp_is_active( 'foo', 'bar' ) );
+
+		// fake registering the 'bar' feature
+		$bp->foo->features = array( 'bar' );
+		$this->assertTrue( bp_is_active( 'foo', 'bar' ) );
+
+		// test the feature filter
+		add_filter( 'bp_is_foo_bar_active', '__return_false' );
+		$this->assertFalse( bp_is_active( 'foo', 'bar' ) );
+		remove_filter( 'bp_is_foo_bar_active', '__return_false' );
+
+		// test the main component filter
+		add_filter( 'bp_is_active', '__return_false' );
+		$this->assertFalse( bp_is_active( 'foo', 'bar' ) );
+		remove_filter( 'bp_is_active', '__return_false' );
+
+		// Reset buddypress() vars
+		$bp->active_components = $reset_active_components;
+	}
+
+	/**
+	 * @group bp_attachments
+	 */
+	public function test_bp_attachments_get_allowed_types() {
+		$supported = array( 'jpeg', 'gif', 'png' );
+
+		$avatar = bp_attachments_get_allowed_types( 'avatar' );
+		$this->assertSame( $supported, $avatar );
+
+		$cover_image = bp_attachments_get_allowed_types( 'cover_image' );
+		$this->assertSame( $supported, $cover_image );
+
+		$images = bp_attachments_get_allowed_types( 'image/' );
+
+		foreach ( $images as $image ) {
+			if ( 'image' !== wp_ext2type( $image ) ) {
+				$not_image = $image;
+			}
+		}
+
+		$this->assertTrue( empty( $not_image ) );
+	}
+
+	public function test_emails_should_have_correct_link_color() {
+		$appearance = bp_email_get_appearance_settings();
+
+		$content    = '<a href="http://example.com">example</a>';
+		$link_color = 'style="color: ' . esc_attr( $appearance['highlight_color'] ) . ';';
+		$result     = bp_email_add_link_color_to_template( $content, 'template', 'add-content' );
+		$this->assertContains( $link_color, $result );
+
+		$content     = '<a href="http://example.com" style="display: block">example</a>';
+		$link_color .= 'display: block';
+		$result      = bp_email_add_link_color_to_template( $content, 'template', 'add-content' );
+		$this->assertContains( $link_color, $result );
+	}
+
+	/**
+	 * @group bp_core_add_page_mappings
+	 */
+	public function test_bp_core_add_page_mappings() {
+		$bp = buddypress();
+		$reset_bp_pages = $bp->pages;
+
+		$expected = array( 'activity', 'groups', 'members' );
+		if ( is_multisite() ) {
+			$expected = array( 'activity', 'blogs', 'groups', 'members' );
+		}
+
+		bp_core_add_page_mappings( $bp->active_components );
+		$bp_pages = array_keys( bp_get_option( 'bp-pages' ) );
+		sort( $bp_pages );
+
+		$this->assertEquals( $expected, $bp_pages );
+
+		$bp->pages = $reset_bp_pages;
 	}
 }

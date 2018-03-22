@@ -1,5 +1,4 @@
 <?php
-
 /**
  * BuddyPress - Users Notifications
  *
@@ -9,7 +8,7 @@
 
 ?>
 
-<div class="item-list-tabs no-ajax" id="subnav" role="navigation">
+<div class="item-list-tabs no-ajax" id="subnav" aria-label="<?php esc_attr_e( 'Member secondary navigation', 'buddypress' ); ?>" role="navigation">
 	<ul>
 		<?php bp_get_options_nav(); ?>
 
@@ -22,17 +21,15 @@
 <?php
 switch ( bp_current_action() ) :
 
-	// Unread
 	case 'unread' :
 		bp_get_template_part( 'members/single/notifications/unread' );
 		break;
 
-	// Read
 	case 'read' :
 		bp_get_template_part( 'members/single/notifications/read' );
 		break;
 
-	// Any other
+	// Any other actions.
 	default :
 		bp_get_template_part( 'members/single/plugins' );
 		break;

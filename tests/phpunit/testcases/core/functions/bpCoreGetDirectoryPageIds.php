@@ -44,7 +44,7 @@ class BP_Tests_Core_Functions_BpCoreGetDirectoryPageIds extends BP_UnitTestCase 
 	public function test_bp_core_get_directory_page_ids_on_non_directory_page_delete() {
 		$old_page_ids = bp_core_get_directory_page_ids();
 
-		$p = $this->factory->post->create( array(
+		$p = self::factory()->post->create( array(
 			'post_status' => 'publish',
 			'post_type' => 'page',
 		) );
@@ -262,16 +262,14 @@ class BP_Tests_Core_Functions_BpCoreGetDirectoryPageIds extends BP_UnitTestCase 
 		$dir_pages = bp_core_get_directory_pages();
 
 		// create a blog
-		$u = $this->factory->user->create();
-		$b1 = $this->factory->blog->create( array( 'user_id' => $u ) );
+		$u = self::factory()->user->create();
+		$b1 = self::factory()->blog->create( array( 'user_id' => $u ) );
 
-		// switch to blog and create some dummy posts until we reach a post ID that
-		// matches our BP activity page ID
+		// Switch to blog and create a post with the same BP activity page ID.
 		switch_to_blog( $b1 );
-		$p = $this->factory->post->create();
-		while( $p <= $dir_pages->activity->id ) {
-			$p = $this->factory->post->create();
-		}
+		$p = self::factory()->post->create( array(
+			'import_id' => $dir_pages->activity->id
+		) );
 
 		// delete the post that matches the BP activity page ID on this sub-site
 		wp_delete_post( $dir_pages->activity->id, true );
@@ -284,5 +282,59 @@ class BP_Tests_Core_Functions_BpCoreGetDirectoryPageIds extends BP_UnitTestCase 
 
 		// Now verify that our BP activity page was not wiped out
 		$this->assertNotEmpty( $dir_pages->activity );
+	}
+
+	/**
+	 * @ticket BP7193
+	 */
+	public function test_bp_core_get_directory_pages_autocreate_register_pages_single_site() {
+		if ( is_multisite() ) {
+			return;
+		}
+
+		// Emulate being in the admin area.
+		if ( ! class_exists( 'BP_Members_Admin', false ) ) {
+			require BP_PLUGIN_DIR . 'bp-members/classes/class-bp-members-admin.php';
+		}
+		$admin = new BP_Members_Admin;
+		add_action( 'update_option_users_can_register', array( $admin, 'single_site_registration_on' ), 10, 2 );
+
+		// Emulate turning registration on.
+		update_option( 'users_can_register', 1 );
+
+		// Now check directory pages.
+		$pages = bp_core_get_directory_pages();
+
+		$this->assertNotEmpty( $pages->register );
+		$this->assertNotEmpty( $pages->activate );
+
+		remove_action( 'update_option_users_can_register', array( $admin, 'single_site_registration_on' ), 10 );
+	}
+
+	/**
+	 * @ticket BP7193
+	 */
+	public function test_bp_core_get_directory_pages_autocreate_register_pages_multisite() {
+		if ( ! is_multisite() ) {
+			return;
+		}
+
+		// Emulate being in the network admin area.
+		if ( ! class_exists( 'BP_Members_Admin', false ) ) {
+			require BP_PLUGIN_DIR . 'bp-members/classes/class-bp-members-admin.php';
+		}
+		$admin = new BP_Members_Admin;
+		add_action( 'update_site_option_registration', array( $admin, 'multisite_registration_on' ), 10, 2 );
+
+		// Emulate turning registration on.
+		update_site_option( 'registration', 'user' );
+
+		// Now check directory pages.
+		$pages = bp_core_get_directory_pages();
+
+		$this->assertNotEmpty( $pages->register );
+		$this->assertNotEmpty( $pages->activate );
+
+		remove_action( 'update_site_option_registration', array( $admin, 'multisite_registration_on' ), 10 );
 	}
 }

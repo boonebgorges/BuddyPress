@@ -14,12 +14,12 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 		$deletion_disabled = bp_disable_account_deletion();
 
 		// Create an admin for testing
-		$admin_user = $this->factory->user->create( array( 'role' => 'administrator' ) );
+		$admin_user = self::factory()->user->create( array( 'role' => 'administrator' ) );
 		$this->grant_super_admin( $admin_user );
 
 		// 1. Admin can delete user account
 		$this->set_current_user( $admin_user );
-		$user1 = $this->factory->user->create( array( 'role' => 'subscriber' ) );
+		$user1 = self::factory()->user->create( array( 'role' => 'subscriber' ) );
 		bp_core_delete_account( $user1 );
 		$maybe_user = new WP_User( $user1 );
 		$this->assertEquals( 0, $maybe_user->ID );
@@ -27,7 +27,7 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 		$this->restore_admins();
 
 		// 2. Admin cannot delete superadmin account
-		$user2 = $this->factory->user->create( array( 'role' => 'administrator' ) );
+		$user2 = self::factory()->user->create( array( 'role' => 'administrator' ) );
 		$this->grant_super_admin( $user2 );
 		bp_core_delete_account( $user2 );
 		$maybe_user = new WP_User( $user2 );
@@ -35,8 +35,8 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 		unset( $maybe_user );
 
 		// User cannot delete other's account
-		$user3 = $this->factory->user->create( array( 'role' => 'subscriber' ) );
-		$user4 = $this->factory->user->create( array( 'role' => 'subscriber' ) );
+		$user3 = self::factory()->user->create( array( 'role' => 'subscriber' ) );
+		$user4 = self::factory()->user->create( array( 'role' => 'subscriber' ) );
 		$this->set_current_user( $user3 );
 		bp_core_delete_account( $user4 );
 		$maybe_user = new WP_User( $user4 );
@@ -54,7 +54,7 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 	 */
 	public function test_bp_core_get_user_domain_after_directory_page_update() {
 		// Generate user
-		$user_id = $this->factory->user->create( array( 'role' => 'subscriber' ) );
+		$user_id = self::factory()->user->create( array( 'role' => 'subscriber' ) );
 
 		// Set object cache first for user domain
 		$user_domain = bp_core_get_user_domain( $user_id );
@@ -83,7 +83,7 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 	 * @group bp_core_get_user_displayname
 	 */
 	public function test_bp_core_get_user_displayname_translate_username() {
-		$u = $this->factory->user->create();
+		$u = self::factory()->user->create();
 
 		$user = new WP_User( $u );
 
@@ -101,84 +101,18 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 
 	/**
 	 * @group bp_core_get_user_displayname
-	 * @group cache
-	 */
-	public function test_bp_core_get_user_displayname_xprofile_populate_cache() {
-		$xprofile_is_active = bp_is_active( 'xprofile' );
-		buddypress()->active_components['xprofile'] = '1';
-
-		$u = $this->factory->user->create( array(
-			'display_name' => 'Foo',
-		) );
-		bp_core_get_user_displayname( $u );
-
-		$this->assertSame( 'Foo', wp_cache_get( 'bp_user_fullname_' . $u, 'bp' ) );
-
-		if ( ! $xprofile_is_active ) {
-			unset( buddypress()->active_components['xprofile'] );
-		}
-	}
-
-	/**
-	 * @group bp_core_get_user_displayname
-	 * @group cache
-	 */
-	public function test_bp_core_get_user_displayname_xprofile_bust_cache_after_xprofile_update() {
-		$xprofile_is_active = bp_is_active( 'xprofile' );
-		buddypress()->active_components['xprofile'] = '1';
-
-		$u = $this->factory->user->create();
-		xprofile_set_field_data( 1, $u, 'Foo Foo' );
-
-		$this->assertFalse( wp_cache_get( 'bp_user_fullname_' . $u, 'bp' ) );
-
-		if ( ! $xprofile_is_active ) {
-			unset( buddypress()->active_components['xprofile'] );
-		}
-	}
-
-	/**
-	 * @group bp_core_get_user_displayname
 	 */
 	public function test_bp_core_get_user_displayname_xprofile_exists() {
 		$xprofile_is_active = bp_is_active( 'xprofile' );
 		buddypress()->active_components['xprofile'] = '1';
 
-		$u = $this->factory->user->create();
+		$u = self::factory()->user->create();
 		xprofile_set_field_data( 1, $u, 'Foo Foo' );
 
 		$this->assertSame( 'Foo Foo', bp_core_get_user_displayname( $u ) );
 
 		if ( ! $xprofile_is_active ) {
 			unset( buddypress()->active_components['xprofile'] );
-		}
-	}
-
-	/**
-	 * @group bp_core_get_user_displayname
-	 */
-	public function test_bp_core_get_user_displayname_xprofile_does_not_exist() {
-		$bp = buddypress();
-		$xprofile_is_active = bp_is_active( 'xprofile' );
-		$bp->active_components['xprofile'] = '1';
-
-		$u = $this->factory->user->create( array(
-			'display_name' => 'Foo Foo',
-		) );
-
-		// Delete directly because BP won't let you delete a required
-		// field through the API
-		global $wpdb;
-		$wpdb->query( $wpdb->prepare( "DELETE FROM {$bp->profile->table_name_data} WHERE user_id = %d AND field_id = 1", $u ) );
-		wp_cache_delete( 'bp_user_fullname_' . $u, 'bp' );
-		wp_cache_delete( "{$u}:1", 'bp_xprofile_data', 'bp' );
-
-		$this->assertSame( '', xprofile_get_field_data( 1, $u ) );
-		$this->assertSame( 'Foo Foo', bp_core_get_user_displayname( $u ) );
-		$this->assertSame( 'Foo Foo', xprofile_get_field_data( 1, $u ) );
-
-		if ( ! $xprofile_is_active ) {
-			unset( $bp->active_components['xprofile'] );
 		}
 	}
 
@@ -193,9 +127,8 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 	 * @group bp_core_get_user_displaynames
 	 */
 	public function test_bp_core_get_user_displaynames_all_uncached() {
-		$u1 = $this->factory->user->create();
-		$u2 = $this->factory->user->create();
-
+		$u1 = self::factory()->user->create();
+		$u2 = self::factory()->user->create();
 		xprofile_set_field_data( 1, $u1, 'Foo' );
 		xprofile_set_field_data( 1, $u2, 'Bar' );
 
@@ -211,39 +144,11 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 	 * @group bp_core_get_user_displaynames
 	 */
 	public function test_bp_core_get_user_displaynames_one_not_in_xprofile() {
-		$u1 = $this->factory->user->create();
-		$u2 = $this->factory->user->create( array(
+		$u1 = self::factory()->user->create();
+		$u2 = self::factory()->user->create( array(
 			'display_name' => 'Bar',
 		) );
-
 		xprofile_set_field_data( 1, $u1, 'Foo' );
-
-		// Delete directly because BP won't let you delete a required
-		// field through the API
-		global $wpdb;
-		$bp = buddypress();
-		$wpdb->query( $wpdb->prepare( "DELETE FROM {$bp->profile->table_name_data} WHERE user_id = %d AND field_id = 1", $u2 ) );
-		wp_cache_delete( 'bp_user_fullname_' . $u2, 'bp' );
-		wp_cache_delete( 1, 'bp_xprofile_data_' . $u2, 'bp' );
-
-		$expected = array(
-			$u1 => 'Foo',
-			$u2 => 'Bar',
-		);
-
-		$this->assertSame( $expected, bp_core_get_user_displaynames( array( $u1, $u2, ) ) );
-	}
-
-	/**
-	 * @group bp_core_get_user_displaynames
-	 */
-	public function test_bp_core_get_user_displaynames_one_in_cache() {
-		$u1 = $this->factory->user->create();
-		xprofile_set_field_data( 1, $u1, 'Foo' );
-
-		// Fake the cache for $u2
-		$u2 = 123;
-		wp_cache_set( 'bp_user_fullname_' . $u2, 'Bar', 'bp' );
 
 		$expected = array(
 			$u1 => 'Foo',
@@ -257,11 +162,11 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 	 * @group bp_members_migrate_signups
 	 */
 	public function test_bp_members_migrate_signups_standard() {
-		$u = $this->factory->user->create();
+		$u = self::factory()->user->create();
 		$u_obj = new WP_User( $u );
 
 		// Fake an old-style registration
-		$key = wp_hash( $u_obj->ID );
+		$key = wp_generate_password( 32, false );
 		update_user_meta( $u, 'activation_key', $key );
 
 		global $wpdb;
@@ -291,11 +196,11 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 	 * @group bp_members_migrate_signups
 	 */
 	public function test_bp_members_migrate_signups_activation_key_but_user_status_0() {
-		$u = $this->factory->user->create();
+		$u = self::factory()->user->create();
 		$u_obj = new WP_User( $u );
 
 		// Fake an old-style registration
-		$key = wp_hash( $u_obj->ID );
+		$key = wp_generate_password( 32, false );
 		update_user_meta( $u, 'activation_key', $key );
 
 		// ...but ensure that user_status is 0. This mimics the
@@ -322,7 +227,7 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 	 * @group bp_members_migrate_signups
 	 */
 	public function test_bp_members_migrate_signups_no_activation_key_but_user_status_2() {
-		$u = $this->factory->user->create();
+		$u = self::factory()->user->create();
 		$u_obj = new WP_User( $u );
 
 		// Fake an old-style registration but without an activation key
@@ -352,9 +257,9 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 	public function test_bp_last_activity_migrate() {
 		// We explicitly do not want last_activity created, so use the
 		// WP factory methods
-		$u1 = $this->factory->user->create();
-		$u2 = $this->factory->user->create();
-		$u3 = $this->factory->user->create();
+		$u1 = self::factory()->user->create();
+		$u2 = self::factory()->user->create();
+		$u3 = self::factory()->user->create();
 
 		$time = time();
 		$t1 = date( 'Y-m-d H:i:s', $time - 50 );
@@ -413,7 +318,7 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 
 		// We explicitly do not want last_activity created, so use the
 		// WP factory methods
-		$user = $this->factory->user->create();
+		$user = self::factory()->user->create();
 		$time = date( 'Y-m-d H:i:s', time() - 50 );
 
 		// Update last user activity
@@ -448,7 +353,7 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 		$bp = buddypress();
 		$displayed_user = $bp->displayed_user;
 
-		$u1 = $this->factory->user->create();
+		$u1 = self::factory()->user->create();
 		$bp->displayed_user->id = $u1;
 
 		// Spam the user
@@ -476,7 +381,7 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 		$bp = buddypress();
 		$displayed_user = $bp->displayed_user;
 
-		$u1 = $this->factory->user->create();
+		$u1 = self::factory()->user->create();
 		$bp->displayed_user->id = $u1;
 
 		// Bulk spam in network admin uses update_user_status
@@ -504,7 +409,7 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 		$bp = buddypress();
 		$displayed_user = $bp->displayed_user;
 
-		$u1 = $this->factory->user->create();
+		$u1 = self::factory()->user->create();
 		$bp->displayed_user->id = $u1;
 
 		// Spam the user
@@ -527,7 +432,7 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 	public function test_bp_core_process_spammer_status_make_spam_user_filter() {
 		add_filter( 'make_spam_user', array( $this, 'notification_filter_callback' ) );
 
-		$u1 = $this->factory->user->create();
+		$u1 = self::factory()->user->create();
 		$n = bp_core_process_spammer_status( $u1, 'spam' );
 
 		remove_filter( 'make_spam_user', array( $this, 'notification_filter_callback' ) );
@@ -539,7 +444,7 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 	public function test_bp_core_process_spammer_status_make_ham_user_filter() {
 		add_filter( 'make_ham_user', array( $this, 'notification_filter_callback' ) );
 
-		$u1 = $this->factory->user->create();
+		$u1 = self::factory()->user->create();
 		$n = bp_core_process_spammer_status( $u1, 'ham' );
 
 		remove_filter( 'make_ham_user', array( $this, 'notification_filter_callback' ) );
@@ -551,7 +456,7 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 	public function test_bp_core_process_spammer_status_bp_make_spam_user_filter() {
 		add_filter( 'bp_make_spam_user', array( $this, 'notification_filter_callback' ) );
 
-		$u1 = $this->factory->user->create();
+		$u1 = self::factory()->user->create();
 		$n = bp_core_process_spammer_status( $u1, 'spam' );
 
 		remove_filter( 'bp_make_spam_user', array( $this, 'notification_filter_callback' ) );
@@ -563,7 +468,7 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 	public function test_bp_core_process_spammer_status_bp_make_ham_user_filter() {
 		add_filter( 'bp_make_ham_user', array( $this, 'notification_filter_callback' ) );
 
-		$u1 = $this->factory->user->create();
+		$u1 = self::factory()->user->create();
 		$n = bp_core_process_spammer_status( $u1, 'ham' );
 
 		remove_filter( 'bp_make_ham_user', array( $this, 'notification_filter_callback' ) );
@@ -575,5 +480,124 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 	public function notification_filter_callback( $value ) {
 		$this->filter_fired = current_filter();
 		return $value;
+	}
+
+	/**
+	 * @ticket BP6208
+	 *
+	 * Note - it's not possible to test this when registration is not configured properly,
+	 * because `bp_has_custom_signup_page()` stores its value in a static variable that cannot
+	 * be toggled.
+	 */
+	public function test_wp_registration_url_should_return_bp_register_page_when_register_page_is_configured_properly() {
+		$this->assertSame( bp_get_signup_page(), wp_registration_url() );
+	}
+
+	/**
+	 * @group bp_core_activate_signup
+	 */
+	public function test_bp_core_activate_signup_password() {
+		global $wpdb;
+
+
+		$signups = array( 'no-blog' =>
+			array( 'signup_id' => self::factory()->signup->create( array(
+					'user_login'     => 'noblog',
+					'user_email'     => 'noblog@example.com',
+					'activation_key' => 'no-blog',
+					'meta' => array(
+						'field_1' => 'Foo Bar',
+						'password' => 'foobar',
+					),
+			) ),
+				'password' => 'foobar',
+			),
+		);
+
+		if ( is_multisite() ) {
+			$signups['ms-blog'] = array( 'signup_id' => self::factory()->signup->create( array(
+					'user_login'     => 'msblog',
+					'user_email'     => 'msblog@example.com',
+					'domain'         => get_current_site()->domain,
+					'path'           => get_current_site()->path . 'ms-blog',
+					'title'          => 'Ding Dang',
+					'activation_key' => 'ms-blog',
+					'meta' => array(
+						'field_1'  => 'Ding Dang',
+						'password' => 'dingdang',
+					),
+				) ),
+				'password' => 'dingdang',
+			);
+		}
+
+		// Neutralize db errors
+		$suppress = $wpdb->suppress_errors();
+
+		foreach ( $signups as $key => $data ) {
+			$u = bp_core_activate_signup( $key );
+
+			$this->assertEquals( get_userdata( $u )->user_pass, $data['password'] );
+		}
+
+		$wpdb->suppress_errors( $suppress );
+	}
+
+	/**
+	 * @ticket BP7461
+	 *
+	 * Test function before and after adding custom illegal names from WordPress.
+	 */
+	public function test_bp_core_get_illegal_names() {
+
+		// Making sure BP custom illegals are in the array.
+		$this->assertTrue( in_array( 'profile', bp_core_get_illegal_names(), true ) );
+		$this->assertTrue( in_array( 'forums', bp_core_get_illegal_names(), true ) );
+
+		add_filter( 'illegal_user_logins', array( $this, '_illegal_user_logins' ) );
+
+		// Testing fake custom illegal names.
+		$this->assertTrue( in_array( 'testuser', bp_core_get_illegal_names(), true ) );
+		$this->assertTrue( in_array( 'admins', bp_core_get_illegal_names(), true ) );
+		$this->assertFalse( in_array( 'buddypresss', bp_core_get_illegal_names(), true ) );
+
+		// Making sure BP custom illegals are in the array after including the custom ones.
+		$this->assertTrue( in_array( 'profile', bp_core_get_illegal_names(), true ) );
+		$this->assertTrue( in_array( 'forums', bp_core_get_illegal_names(), true ) );
+
+		remove_filter( 'illegal_user_logins', array( $this, '_illegal_user_logins' ) );
+	}
+
+	public function _illegal_user_logins() {
+		return array(
+			'testuser',
+			'admins',
+			'buddypress',
+		);
+	}
+
+	/**
+	 * @group bp_core_activate_signup
+	 */
+	public function test_bp_core_activate_signup_should_add_user_role() {
+		$key = 'test';
+
+		// Create the signup.
+		$this->factory->signup->create( array(
+			'user_login'     => 'test',
+			'user_email'     => 'test@example.com',
+			'activation_key' => $key,
+			'meta' => array(
+				'field_1' => 'Foo Bar',
+				'password' => 'foobar',
+			),
+		) );
+
+		// Activate user.
+		$user_id = bp_core_activate_signup( $key );
+
+		// Assert that user has a role.
+		$user = get_userdata( $user_id );
+		$this->assertNotEmpty( $user->roles );
 	}
 }

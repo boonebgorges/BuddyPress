@@ -366,4 +366,5 @@ class BP_Tests_Blogs_Template extends BP_UnitTestCase {
 
 		$_REQUEST = $request;
 	}
+
 }

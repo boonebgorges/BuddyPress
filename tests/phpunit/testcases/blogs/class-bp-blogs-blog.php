@@ -12,9 +12,9 @@ class BP_Tests_BP_Blogs_Blog_TestCases extends BP_UnitTestCase {
 
 		$old_user = get_current_user_id();
 
-		$u = $this->factory->user->create();
+		$u = self::factory()->user->create();
 		$this->set_current_user( $u );
-		$b = $this->factory->blog->create( array(
+		$b = self::factory()->blog->create( array(
 			'title' => 'The Foo Bar Blog',
 			'user_id' => $u,
 		) );
@@ -27,9 +27,6 @@ class BP_Tests_BP_Blogs_Blog_TestCases extends BP_UnitTestCase {
 		$blog_ids = wp_list_pluck( $blogs['blogs'], 'blog_id' );
 
 		$this->assertEquals( array( $b ), $blog_ids );
-
-		$this->set_current_user( $old_user );
-		wpmu_delete_blog( $b, true );
 	}
 
 	/**
@@ -42,9 +39,9 @@ class BP_Tests_BP_Blogs_Blog_TestCases extends BP_UnitTestCase {
 
 		$old_user = get_current_user_id();
 
-		$u = $this->factory->user->create();
+		$u = self::factory()->user->create();
 		$this->set_current_user( $u );
-		$b = $this->factory->blog->create( array(
+		$b = self::factory()->blog->create( array(
 			'title' => 'The Foo Bar Blog',
 			'domain' => __METHOD__,
 			'user_id' => $u,
@@ -60,9 +57,6 @@ class BP_Tests_BP_Blogs_Blog_TestCases extends BP_UnitTestCase {
 
 		$this->assertEquals( array( $b ), $blog_ids );
 		$this->assertEquals( 1, $blogs['total'] );
-
-		$this->set_current_user( $old_user );
-		wpmu_delete_blog( $b, true );
 	}
 
 	public function test_search_blogs() {
@@ -72,9 +66,9 @@ class BP_Tests_BP_Blogs_Blog_TestCases extends BP_UnitTestCase {
 
 		$old_user = get_current_user_id();
 
-		$u = $this->factory->user->create();
+		$u = self::factory()->user->create();
 		$this->set_current_user( $u );
-		$b = $this->factory->blog->create( array(
+		$b = self::factory()->blog->create( array(
 			'title' => 'The Foo Bar Blog',
 			'user_id' => $u,
 			'path' => '/path' . rand() . time() . '/',
@@ -88,9 +82,6 @@ class BP_Tests_BP_Blogs_Blog_TestCases extends BP_UnitTestCase {
 		$blog_ids = wp_list_pluck( $blogs['blogs'], 'blog_id' );
 
 		$this->assertEquals( array( $b ), $blog_ids );
-
-		$this->set_current_user( $old_user );
-		wpmu_delete_blog( $b, true );
 	}
 
 	/**
@@ -103,9 +94,9 @@ class BP_Tests_BP_Blogs_Blog_TestCases extends BP_UnitTestCase {
 
 		$old_user = get_current_user_id();
 
-		$u = $this->factory->user->create();
+		$u = self::factory()->user->create();
 		$this->set_current_user( $u );
-		$b = $this->factory->blog->create( array(
+		$b = self::factory()->blog->create( array(
 			'title' => 'Foo Bar Blog',
 			'user_id' => $u,
 			'path' => '/path' . rand() . time() . '/',
@@ -119,9 +110,6 @@ class BP_Tests_BP_Blogs_Blog_TestCases extends BP_UnitTestCase {
 		$blog_ids = wp_list_pluck( $blogs['blogs'], 'blog_id' );
 
 		$this->assertEquals( array( $b ), $blog_ids );
-
-		$this->set_current_user( $old_user );
-		wpmu_delete_blog( $b, true );
 	}
 
 	/**
@@ -134,15 +122,15 @@ class BP_Tests_BP_Blogs_Blog_TestCases extends BP_UnitTestCase {
 
 		$old_user = get_current_user_id();
 
-		$u = $this->factory->user->create();
+		$u = self::factory()->user->create();
 		$this->set_current_user( $u );
 		$bs = array(
-			'foobar' => $this->factory->blog->create( array(
+			'foobar' => self::factory()->blog->create( array(
 				'title' => 'Foo Bar Blog',
 				'user_id' => $u,
 				'path' => '/path' . rand() . time() . '/',
 			) ),
-			'barfoo' => $this->factory->blog->create( array(
+			'barfoo' => self::factory()->blog->create( array(
 				'title' => 'Bar foo Blog',
 				'user_id' => $u,
 				'path' => '/path' . rand() . time() . '/',
@@ -181,9 +169,5 @@ class BP_Tests_BP_Blogs_Blog_TestCases extends BP_UnitTestCase {
 		$this->assertTrue( 2 == count( $blogs['blogs'] ) );
 
 		$this->set_current_user( $old_user );
-
-		foreach ( $bs as $d ) {
-			wpmu_delete_blog( $d, true );
-		}
 	}
 }

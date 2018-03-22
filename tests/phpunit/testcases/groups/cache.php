@@ -9,8 +9,8 @@ class BP_Tests_Group_Cache extends BP_UnitTestCase {
 	 * @group bp_groups_update_meta_cache
 	 */
 	public function test_bp_groups_update_meta_cache() {
-		$g1 = $this->factory->group->create();
-		$g2 = $this->factory->group->create();
+		$g1 = self::factory()->group->create();
+		$g2 = self::factory()->group->create();
 
 		$time = bp_core_current_time();
 
@@ -70,10 +70,10 @@ class BP_Tests_Group_Cache extends BP_UnitTestCase {
 	 * @group groups_delete_group_cache_on_metadata_change
 	 */
 	public function test_bp_groups_delete_group_cache_on_metadata_add() {
-		$g = $this->factory->group->create();
+		$g = self::factory()->group->create();
 
 		// Prime cache
-		groups_get_group( array( 'group_id' => $g, ) );
+		groups_get_group( $g );
 
 		$this->assertNotEmpty( wp_cache_get( $g, 'bp_groups' ) );
 
@@ -88,11 +88,11 @@ class BP_Tests_Group_Cache extends BP_UnitTestCase {
 	 * @group groups_delete_group_cache_on_metadata_change
 	 */
 	public function test_bp_groups_delete_group_cache_on_metadata_change() {
-		$g = $this->factory->group->create();
+		$g = self::factory()->group->create();
 
 		// Prime cache
 		groups_update_groupmeta( $g, 'foo', 'bar' );
-		groups_get_group( array( 'group_id' => $g ) );
+		groups_get_group( $g );
 
 		$this->assertNotEmpty( wp_cache_get( $g, 'bp_groups' ) );
 
@@ -105,10 +105,10 @@ class BP_Tests_Group_Cache extends BP_UnitTestCase {
 	 * @group bp_groups_prefetch_activity_object_data
 	 */
 	public function test_bp_groups_prefetch_activity_object_data_all_cached() {
-		$g = $this->factory->group->create();
+		$g = self::factory()->group->create();
 
 		// Prime cache
-		groups_get_group( array( 'group_id' => $g ) );
+		groups_get_group( $g );
 
 		// fake an activity
 		$a = new stdClass;
@@ -129,11 +129,11 @@ class BP_Tests_Group_Cache extends BP_UnitTestCase {
 	 * @group bp_groups_prefetch_activity_object_data
 	 */
 	public function test_bp_groups_prefetch_activity_object_data_some_cached() {
-		$g1 = $this->factory->group->create();
-		$g2 = $this->factory->group->create();
+		$g1 = self::factory()->group->create();
+		$g2 = self::factory()->group->create();
 
 		// Prime cache
-		groups_get_group( array( 'group_id' => $g1 ) );
+		groups_get_group( $g1 );
 
 		// fake activities
 		$a1 = new stdClass;
@@ -159,9 +159,9 @@ class BP_Tests_Group_Cache extends BP_UnitTestCase {
 	 * @group groups_get_group_admins
 	 */
 	public function test_groups_get_group_admins_cache() {
-		$u1 = $this->factory->user->create();
-		$u2 = $this->factory->user->create();
-		$g = $this->factory->group->create( array( 'creator_id' => $u1 ) );
+		$u1 = self::factory()->user->create();
+		$u2 = self::factory()->user->create();
+		$g = self::factory()->group->create( array( 'creator_id' => $u1 ) );
 
 		// User 2 joins the group
 		groups_join_group( $g, $u2 );
@@ -181,12 +181,52 @@ class BP_Tests_Group_Cache extends BP_UnitTestCase {
 	}
 
 	/**
+	 * @group groups_get_group_mods
+	 */
+	public function test_groups_get_group_mods_cache() {
+		$u1 = self::factory()->user->create();
+		$u2 = self::factory()->user->create();
+		$g = self::factory()->group->create( array( 'creator_id' => $u1 ) );
+
+		// User 2 joins the group
+		groups_join_group( $g, $u2 );
+
+		// prime cache
+		groups_get_group_mods( $g );
+
+		// promote user 2 to an admin
+		bp_update_is_item_admin( true );
+		groups_promote_member( $u2, $g, 'mod' );
+
+		// assert new cached value
+		$this->assertEquals( 1, count( groups_get_group_mods( $g ) ) );
+	}
+
+	/**
+	 * @group groups_get_group_mods
+	 */
+	public function test_groups_get_group_mods_cache_on_member_save() {
+		$u1 = self::factory()->user->create();
+		$u2 = self::factory()->user->create();
+		$g = self::factory()->group->create( array( 'creator_id' => $u1 ) );
+
+		// prime cache
+		groups_get_group_mods( $g );
+
+		// promote user 2 to an admin via BP_Groups_Member::save()
+		self::add_user_to_group( $u2, $g, array( 'is_mod' => 1 ) );
+
+		// assert new cached value
+		$this->assertEquals( 1, count( groups_get_group_mods( $g ) ) );
+	}
+
+	/**
 	 * @group groups_get_group_admins
 	 */
 	public function test_groups_get_group_admins_cache_on_member_save() {
-		$u1 = $this->factory->user->create();
-		$u2 = $this->factory->user->create();
-		$g = $this->factory->group->create( array( 'creator_id' => $u1 ) );
+		$u1 = self::factory()->user->create();
+		$u2 = self::factory()->user->create();
+		$g = self::factory()->group->create( array( 'creator_id' => $u1 ) );
 
 		// prime cache
 		groups_get_group_admins( $g );

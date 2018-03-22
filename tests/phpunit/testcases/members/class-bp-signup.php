@@ -62,86 +62,126 @@ class BP_Tests_BP_Signup extends BP_UnitTestCase {
 	}
 
 	/**
+	 * @group add
+	 */
+	public function test_add_no_visibility_level_set_should_use_default_visiblity_level() {
+		// Update field_1's default visiblity to 'adminsonly'
+		bp_xprofile_update_field_meta( 1, 'default_visibility', 'adminsonly' );
+
+		// Add new signup without a custom field visibility set for field_1.
+		$signup = BP_Signup::add( array(
+			'title' => 'Foo bar',
+			'user_login' => 'user1',
+			'user_email' => 'user1@example.com',
+			'registered' => bp_core_current_time(),
+			'activation_key' => '12345',
+			'meta' => array(
+				'field_1' => 'Foo Bar',
+				'meta1' => 'meta2',
+				'password' => 'password',
+
+				/*
+				 * Ensure we pass the field ID.
+				 *
+				 * See bp_core_activate_signup() and BP_Signup::add_backcompat().
+				 */
+				'profile_field_ids' => '1'
+			),
+		) );
+
+		// Activate the signup.
+		$activate = BP_Signup::activate( (array) $signup );
+
+		// Assert that field 1's visibility for the signup is still 'adminsonly'
+		$vis = xprofile_get_field_visibility_level( 1, $activate['activated'][0] );
+		$this->assertSame( 'adminsonly', $vis );
+	}
+
+	/**
 	 * @group get
 	 */
 	public function test_get_with_offset() {
-		$s1 = $this->factory->signup->create();
-		$s2 = $this->factory->signup->create();
-		$s3 = $this->factory->signup->create();
+		$s1 = self::factory()->signup->create();
+		$s2 = self::factory()->signup->create();
+		$s3 = self::factory()->signup->create();
 
 		$ss = BP_Signup::get( array(
 			'offset' => 1,
+			'fields' => 'ids',
 		) );
 
-		$this->assertEquals( array( $s2 ), wp_list_pluck( $ss['signups'], 'signup_id' ) );
+		$this->assertEquals( array( $s2 ), $ss['signups'] );
 	}
 
 	/**
 	 * @group get
 	 */
 	public function test_get_with_number() {
-		$s1 = $this->factory->signup->create();
-		$s2 = $this->factory->signup->create();
-		$s3 = $this->factory->signup->create();
+		$s1 = self::factory()->signup->create();
+		$s2 = self::factory()->signup->create();
+		$s3 = self::factory()->signup->create();
 
 		$ss = BP_Signup::get( array(
 			'number' => 2,
+			'fields' => 'ids',
 		) );
 
-		$this->assertEquals( array( $s3, $s2 ), wp_list_pluck( $ss['signups'], 'signup_id' ) );
+		$this->assertEquals( array( $s3, $s2 ), $ss['signups'] );
 	}
 
 	/**
 	 * @group get
 	 */
 	public function test_get_with_usersearch() {
-		$s1 = $this->factory->signup->create( array(
+		$s1 = self::factory()->signup->create( array(
 			'user_email' => 'fghij@example.com',
 		) );
-		$s2 = $this->factory->signup->create();
-		$s3 = $this->factory->signup->create();
+		$s2 = self::factory()->signup->create();
+		$s3 = self::factory()->signup->create();
 
 		$ss = BP_Signup::get( array(
 			'usersearch' => 'ghi',
+			'fields' => 'ids',
 		) );
 
-		$this->assertEquals( array( $s1 ), wp_list_pluck( $ss['signups'], 'signup_id' ) );
+		$this->assertEquals( array( $s1 ), $ss['signups'] );
 	}
 
 	/**
 	 * @group get
 	 */
 	public function test_get_with_orderby_email() {
-		$s1 = $this->factory->signup->create( array(
+		$s1 = self::factory()->signup->create( array(
 			'user_email' => 'fghij@example.com',
 		) );
-		$s2 = $this->factory->signup->create( array(
+		$s2 = self::factory()->signup->create( array(
 			'user_email' => 'abcde@example.com',
 		) );
-		$s3 = $this->factory->signup->create( array(
+		$s3 = self::factory()->signup->create( array(
 			'user_email' => 'zzzzz@example.com',
 		) );
 
 		$ss = BP_Signup::get( array(
 			'orderby' => 'email',
 			'number' => 3,
+			'fields' => 'ids',
 		) );
 
-		// default order is DESC
-		$this->assertEquals( array( $s3, $s1, $s2 ), wp_list_pluck( $ss['signups'], 'signup_id' ) );
+		// default order is DESC.
+		$this->assertEquals( array( $s3, $s1, $s2 ), $ss['signups'] );
 	}
 
 	/**
 	 * @group get
 	 */
 	public function test_get_with_orderby_email_asc() {
-		$s1 = $this->factory->signup->create( array(
+		$s1 = self::factory()->signup->create( array(
 			'user_email' => 'fghij@example.com',
 		) );
-		$s2 = $this->factory->signup->create( array(
+		$s2 = self::factory()->signup->create( array(
 			'user_email' => 'abcde@example.com',
 		) );
-		$s3 = $this->factory->signup->create( array(
+		$s3 = self::factory()->signup->create( array(
 			'user_email' => 'zzzzz@example.com',
 		) );
 
@@ -149,66 +189,70 @@ class BP_Tests_BP_Signup extends BP_UnitTestCase {
 			'orderby' => 'email',
 			'number' => 3,
 			'order' => 'ASC',
+			'fields' => 'ids',
 		) );
 
-		$this->assertEquals( array( $s2, $s1, $s3 ), wp_list_pluck( $ss['signups'], 'signup_id' ) );
+		$this->assertEquals( array( $s2, $s1, $s3 ), $ss['signups'] );
 	}
 
 	/**
 	 * @group get
 	 */
 	public function test_get_with_include() {
-		$s1 = $this->factory->signup->create();
-		$s2 = $this->factory->signup->create();
-		$s3 = $this->factory->signup->create();
+		$s1 = self::factory()->signup->create();
+		$s2 = self::factory()->signup->create();
+		$s3 = self::factory()->signup->create();
 
 		$ss = BP_Signup::get( array(
 			'include' => array( $s1, $s3 ),
+			'fields' => 'ids',
 		) );
 
-		$this->assertEquals( array( $s1, $s3 ), wp_list_pluck( $ss['signups'], 'signup_id' ) );
+		$this->assertEquals( array( $s1, $s3 ), $ss['signups'] );
 	}
 
 	/**
 	 * @group get
 	 */
 	public function test_get_with_activation_key() {
-		$s1 = $this->factory->signup->create( array(
+		$s1 = self::factory()->signup->create( array(
 			'activation_key' => 'foo',
 		) );
-		$s2 = $this->factory->signup->create( array(
+		$s2 = self::factory()->signup->create( array(
 			'activation_key' => 'bar',
 		) );
-		$s3 = $this->factory->signup->create( array(
+		$s3 = self::factory()->signup->create( array(
 			'activation_key' => 'baz',
 		) );
 
 		$ss = BP_Signup::get( array(
 			'activation_key' => 'bar',
+			'fields' => 'ids',
 		) );
 
-		$this->assertEquals( array( $s2 ), wp_list_pluck( $ss['signups'], 'signup_id' ) );
+		$this->assertEquals( array( $s2 ), $ss['signups'] );
 	}
 
 	/**
 	 * @group get
 	 */
 	public function test_get_with_user_login() {
-		$s1 = $this->factory->signup->create( array(
+		$s1 = self::factory()->signup->create( array(
 			'user_login' => 'aaaafoo',
 		) );
-		$s2 = $this->factory->signup->create( array(
+		$s2 = self::factory()->signup->create( array(
 			'user_login' => 'zzzzfoo',
 		) );
-		$s3 = $this->factory->signup->create( array(
+		$s3 = self::factory()->signup->create( array(
 			'user_login' => 'jjjjfoo',
 		) );
 
 		$ss = BP_Signup::get( array(
 			'user_login' => 'zzzzfoo',
+			'fields' => 'ids',
 		) );
 
-		$this->assertEquals( array( $s2 ), wp_list_pluck( $ss['signups'], 'signup_id' ) );
+		$this->assertEquals( array( $s2 ), $ss['signups'] );
 	}
 
 	/**
@@ -217,19 +261,19 @@ class BP_Tests_BP_Signup extends BP_UnitTestCase {
 	public function test_activate_user_accounts() {
 		$signups = array();
 
-		$signups['accountone'] = $this->factory->signup->create( array(
+		$signups['accountone'] = self::factory()->signup->create( array(
 			'user_login'     => 'accountone',
 			'user_email'     => 'accountone@example.com',
 			'activation_key' => 'activationkeyone',
 		) );
 
-		$signups['accounttwo'] = $this->factory->signup->create( array(
+		$signups['accounttwo'] = self::factory()->signup->create( array(
 			'user_login'     => 'accounttwo',
 			'user_email'     => 'accounttwo@example.com',
 			'activation_key' => 'activationkeytwo',
 		) );
 
-		$signups['accountthree'] = $this->factory->signup->create( array(
+		$signups['accountthree'] = self::factory()->signup->create( array(
 			'user_login'     => 'accountthree',
 			'user_email'     => 'accountthree@example.com',
 			'activation_key' => 'activationkeythree',
@@ -248,85 +292,18 @@ class BP_Tests_BP_Signup extends BP_UnitTestCase {
 	}
 
 	/**
-	 * @group activate
+	 * @group get
 	 */
-	public function test_activate_user_accounts_with_blogs() {
-		global $wpdb, $current_site, $base;
+	public function test_get_signup_ids_only() {
+		$s1 = self::factory()->signup->create();
+		$s2 = self::factory()->signup->create();
+		$s3 = self::factory()->signup->create();
 
-		if ( ! is_multisite() ) {
-			return;
-		}
-
-		$signups = array();
-
-		// Can't trust this first signup :(
-		$signups['testpath1'] = $this->factory->signup->create( array(
-			'user_login'     => 'testpath1',
-			'user_email'     => 'blogone@example.com',
-			'domain'         => '',
-			'path'           => '',
-			'title'          => '',
-			'activation_key' => 'activationkeyblogone',
+		$ss = BP_Signup::get( array(
+			'number' => 3,
+			'fields' => 'ids',
 		) );
 
-		$signups['blogtwo'] = $this->factory->signup->create( array(
-			'user_login'     => 'blogtwo',
-			'user_email'     => 'blogtwo@example.com',
-			'domain'         => $current_site->domain,
-			'path'           => $base . 'blogtwo',
-			'title'          => 'Blog Two',
-			'activation_key' => 'activationkeyblogtwo',
-		) );
-
-		$signups['blogthree'] = $this->factory->signup->create( array(
-			'user_login'     => 'blogthree',
-			'user_email'     => 'blogthree@example.com',
-			'domain'         => '',
-			'path'           => '',
-			'title'          => '',
-			'activation_key' => 'activationkeyblogthree',
-		) );
-
-		$signups['blogfour'] = $this->factory->signup->create( array(
-			'user_login'     => 'blogfour',
-			'user_email'     => 'blogfour@example.com',
-			'domain'         => $current_site->domain,
-			'path'           => $base . 'blogfour',
-			'title'          => 'Blog Four',
-			'activation_key' => 'activationkeyblogfour',
-		) );
-
-		// Neutralize db errors
-		$suppress = $wpdb->suppress_errors();
-
-		$results = BP_Signup::activate( $signups );
-
-		$wpdb->suppress_errors( $suppress );
-
-		$this->assertNotEmpty( $results['activated'] );
-
-		$users  = array();
-
-		foreach ( $signups as $login => $signup_id  ) {
-			$users[ $login ] = get_user_by( 'login', $login );
-		}
-
-		$this->assertEqualSets( $results['activated'], wp_list_pluck( $users, 'ID' ) );
-
-		$blogs = array();
-
-		foreach ( $users as $path => $user  ) {
-			// Can't trust this first signup :(
-			if ( 'testpath1' == $path ) {
-				continue;
-			}
-
-			$blogs[ $path ] = get_active_blog_for_user( $user->ID );
-		}
-
-		$blogs = array_filter( $blogs );
-		$blogs = array_map( 'basename', wp_list_pluck( $blogs, 'path' ) );
-
-		$this->assertEqualSets( $blogs, array_keys( $blogs ) );
+		$this->assertEquals( array( $s3, $s2, $s1 ), $ss['signups'] );
 	}
 }

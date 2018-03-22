@@ -6,12 +6,14 @@
 	$( '.visibility-toggle-link' ).on( 'click', function( event ) {
 		event.preventDefault();
 
-		$( this ).parent().hide()
+		$( this ).attr( 'aria-expanded', 'true' ).parent().hide()
 			.siblings( '.field-visibility-settings' ).show();
 	} );
 
 	$( '.field-visibility-settings-close' ).on( 'click', function( event ) {
 		event.preventDefault();
+
+		 $( '.visibility-toggle-link' ).attr( 'aria-expanded', 'false' );
 
 		var settings_div = $(this).parent(),
 		vis_setting_text = settings_div.find( 'input:checked' ).parent().text();
@@ -29,7 +31,7 @@
  * Deselects any select options or input options for the specified field element.
  *
  * @param {String} container HTML ID of the field
- * @since BuddyPress (1.0.0)
+ * @since 1.0.0
  */
 function clear( container ) {
 	container = document.getElementById( container );

@@ -76,13 +76,26 @@ function add_option(forWhat) {
  * @param {string} forWhat Value of the field to show options for
  */
 function show_options( forWhat ) {
-	for ( var i = 0; i < XProfileAdmin.supports_options_field_types.length; i++ ) {
-		document.getElementById( XProfileAdmin.supports_options_field_types[i] ).style.display = 'none';
+	var do_autolink;
+
+	for ( var i = 0; i < XProfileAdmin.do_settings_section_field_types.length; i++ ) {
+		document.getElementById( XProfileAdmin.do_settings_section_field_types[i] ).style.display = 'none';
 	}
 
-	if ( XProfileAdmin.supports_options_field_types.indexOf( forWhat ) >= 0 ) {
+	if ( XProfileAdmin.do_settings_section_field_types.indexOf( forWhat ) >= 0 ) {
 		document.getElementById( forWhat ).style.display = '';
+		do_autolink = 'on';
+	} else {
+		jQuery( '#do-autolink' ).val( '' );
+		do_autolink = '';
 	}
+
+	// Only overwrite the do_autolink setting if no setting is saved in the database.
+	if ( '' === XProfileAdmin.do_autolink ) {
+		jQuery( '#do-autolink' ).val( do_autolink );
+	}
+
+	jQuery( document ).trigger( 'bp-xprofile-show-options', forWhat );
 }
 
 function hide( id ) {
@@ -94,6 +107,34 @@ function hide( id ) {
 	// the field id is [fieldtype]option[iterator] and not [fieldtype]div[iterator]
 	var field_id = id.replace( 'div', 'option' );
 	document.getElementById( field_id ).value = '';
+}
+
+/**
+ * @summary Toggles "no member type" notice.
+ *
+ * @since 2.4.0
+ */
+function toggle_no_member_type_notice() {
+	var $member_type_checkboxes = jQuery( 'input.member-type-selector' );
+
+	// No checkboxes? Nothing to do.
+	if ( ! $member_type_checkboxes.length ) {
+		return;
+	}
+
+	var has_checked = false;
+	$member_type_checkboxes.each( function() {
+		if ( jQuery( this ).is( ':checked' ) ) {
+			has_checked = true;
+			return false;
+		}
+	} );
+
+	if ( has_checked ) {
+		jQuery( 'p.member-type-none-notice' ).addClass( 'hide' );
+	} else {
+		jQuery( 'p.member-type-none-notice' ).removeClass( 'hide' );
+	}
 }
 
 var fixHelper = function(e, ui) {
@@ -152,6 +193,12 @@ jQuery( document ).ready( function() {
 	// Set focus in Field Title, if we're on the right page
 	jQuery( '#bp-xprofile-add-field #title' ).focus();
 
+	// Set up the notice that shows when no member types are selected for a field.
+	toggle_no_member_type_notice();
+	jQuery( 'input.member-type-selector' ).on( 'change', function() {
+		toggle_no_member_type_notice();
+	} );
+
 	// Set up deleting options ajax
 	jQuery( 'a.ajax-option-delete' ).on( 'click', function() {
 		var theId = this.id.split( '-' );
@@ -200,7 +247,7 @@ jQuery( document ).ready( function() {
 	// Allow reordering of fields within groups
 	jQuery( 'fieldset.field-group' ).sortable({
 		cursor: 'move',
-		opacity: 1,
+		opacity: 0.7,
 		items: 'fieldset',
 		tolerance: 'pointer',
 
@@ -224,6 +271,47 @@ jQuery( document ).ready( function() {
 
 	// Handle title placeholder text the WordPress way
 	titleHint( 'title' );
+
+	// On Date fields, selecting a date_format radio button should change the Custom value.
+	var $date_format = jQuery( 'input[name="date_format"]' );
+	var $date_format_custom_value = jQuery( '#date-format-custom-value' );
+	var $date_format_sample = jQuery( '#date-format-custom-sample' );
+	$date_format.click( function( e ) {
+		switch ( e.target.value ) {
+			case 'elapsed' :
+				$date_format_custom_value.val( '' );
+				$date_format_sample.html( '' );
+			break;
+
+			case 'custom' :
+			break;
+
+			default :
+				$date_format_custom_value.val( e.target.value );
+				$date_format_sample.html( jQuery( e.target ).siblings( '.date-format-label' ).html() );
+			break;
+		}
+	} );
+
+	// Clicking into the custom date format field should select the Custom radio button.
+	var $date_format_custom = jQuery( '#date-format-custom' );
+	$date_format_custom_value.focus( function() {
+		$date_format_custom.prop( 'checked', 'checked' );
+	} );
+
+	// Validate custom date field.
+	var $date_format_spinner = jQuery( '#date-format-custom-spinner' );
+	$date_format_custom_value.change( function( e ) {
+		$date_format_spinner.addClass( 'is-active' );
+		jQuery.post( ajaxurl, {
+			action: 'date_format',
+			date: e.target.value
+		},
+		function( response ) {
+			$date_format_spinner.removeClass( 'is-active' );
+			$date_format_sample.html( response );
+		} );
+	} );
 
 	// tabs init with a custom tab template and an "add" callback filling in the content
 	var $tab_items,

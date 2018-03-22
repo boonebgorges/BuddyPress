@@ -13,10 +13,10 @@ class BP_Tests_Groups_Notifications extends BP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		$this->current_user = get_current_user_id();
-		$this->set_current_user( $this->factory->user->create() );
+		$this->set_current_user( self::factory()->user->create() );
 
-		$this->requesting_user_id = $this->factory->user->create();
-		$this->group = $this->factory->group->create();
+		$this->requesting_user_id = self::factory()->user->create();
+		$this->group = self::factory()->group->create();
 		$this->filter_fired = '';
 	}
 
@@ -166,7 +166,7 @@ class BP_Tests_Groups_Notifications extends BP_UnitTestCase {
 		$g = 12;
 
 		// Admin
-		$n = $this->factory->notification->create( array(
+		$n = self::factory()->notification->create( array(
 			'component_name' => 'groups',
 			'user_id' => $u,
 			'item_id' => $g,
@@ -190,7 +190,7 @@ class BP_Tests_Groups_Notifications extends BP_UnitTestCase {
 		$this->assertEmpty( $notifications );
 
 		// Mod
-		$n = $this->factory->notification->create( array(
+		$n = self::factory()->notification->create( array(
 			'component_name' => 'groups',
 			'user_id' => $u,
 			'item_id' => $g,
@@ -218,4 +218,44 @@ class BP_Tests_Groups_Notifications extends BP_UnitTestCase {
 		$this->filter_fired = current_filter();
 		return $value;
 	}
+
+	/**
+	 * @group BP7375
+	 */
+	public function test_membership_request_notifications_should_be_cleared_when_request_is_accepted() {
+		$users = self::factory()->user->create_many( 3 );
+
+		$this->add_user_to_group( $users[0], $this->group, array(
+			'is_admin' => 1,
+		) );
+		$this->add_user_to_group( $users[1], $this->group, array(
+			'is_admin' => 1,
+		) );
+
+		groups_send_membership_request( $users[2], $this->group );
+
+		// Both admins should get a notification.
+		$get_args = array(
+			'user_id' => $users[0],
+			'item_id' => $this->group,
+			'secondary_item_id' => $users[2],
+			'component_action' => 'new_membership_request',
+			'is_new' => true,
+		);
+		$u0_notifications = BP_Notifications_Notification::get( $get_args );
+		$u1_notifications = BP_Notifications_Notification::get( $get_args );
+		$this->assertNotEmpty( $u0_notifications );
+		$this->assertNotEmpty( $u1_notifications );
+
+		$this->assertTrue( groups_invite_user( array(
+			'user_id' => $users[2],
+			'group_id' => $this->group,
+		) ) );
+
+		$u0_notifications = BP_Notifications_Notification::get( $get_args );
+		$u1_notifications = BP_Notifications_Notification::get( $get_args );
+		$this->assertEmpty( $u0_notifications );
+		$this->assertEmpty( $u1_notifications );
+	}
+
 }
