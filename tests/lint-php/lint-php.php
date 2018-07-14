@@ -11,8 +11,8 @@
 function bp_lint( $dir ) {
 	static $failed = array();
 
-	$excluded_dirs  = [];
-	$excluded_files = [];
+	$excluded_dirs  = array();
+	$excluded_files = array();
 
 	foreach ( new RecursiveDirectoryIterator( $dir ) as $path => $objSplFileInfo ) {
 		// Recurse if directory.
