@@ -3,6 +3,7 @@
  * Code to hook into the WP Customizer
  *
  * @since 3.0.0
+ * @version 3.1.0
  */
 
 /**
@@ -27,30 +28,37 @@ function bp_nouveau_customize_register( WP_Customize_Manager $wp_customize ) {
 		'priority'    => 200,
 	) );
 
+	/**
+	 * Filters the BuddyPress Nouveau customizer sections and their arguments.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param array $value Array of Customizer sections.
+	 */
 	$sections = apply_filters( 'bp_nouveau_customizer_sections', array(
 		'bp_nouveau_general_settings' => array(
 			'title'       => __( 'General BP Settings', 'buddypress' ),
 			'panel'       => 'bp_nouveau_panel',
 			'priority'    => 10,
-			'description' => __( 'Set general BuddyPress styles', 'buddypress' ),
+			'description' => __( 'Configure general BuddyPress appearance options.', 'buddypress' ),
 		),
 		'bp_nouveau_user_front_page' => array(
-			'title'       => __( 'User\'s front page', 'buddypress' ),
+			'title'       => __( 'Member front page', 'buddypress' ),
 			'panel'       => 'bp_nouveau_panel',
 			'priority'    => 30,
-			'description' => __( 'Set your preferences about the members default front page.', 'buddypress' ),
+			'description' => __( 'Configure the default front page for members.', 'buddypress' ),
 		),
 		'bp_nouveau_user_primary_nav' => array(
-			'title'       => __( 'User\'s navigation', 'buddypress' ),
+			'title'       => __( 'Member navigation', 'buddypress' ),
 			'panel'       => 'bp_nouveau_panel',
 			'priority'    => 50,
-			'description' => __( 'Customize the members primary navigations. Navigate to any random member\'s profile to live preview your changes.', 'buddypress' ),
+			'description' => __( 'Customize the navigation menu for members. In the preview window, navigate to a user to preview your changes.', 'buddypress' ),
 		),
 		'bp_nouveau_loops_layout' => array(
-			'title'       => __( 'Loops layouts', 'buddypress' ),
+			'title'       => __( 'Loop layouts', 'buddypress' ),
 			'panel'       => 'bp_nouveau_panel',
 			'priority'    => 70,
-			'description' => __( 'Set the number of columns to use for the BuddyPress loops.', 'buddypress' ),
+			'description' => __( 'Set the number of columns to use for BuddyPress loops.', 'buddypress' ),
 		),
 		'bp_nouveau_dir_layout' => array(
 			'title'       => __( 'Directory layouts', 'buddypress' ),
@@ -65,6 +73,13 @@ function bp_nouveau_customize_register( WP_Customize_Manager $wp_customize ) {
 		$wp_customize->add_section( $id_section, $section_args );
 	}
 
+	/**
+	 * Filters the BuddyPress Nouveau customizer settings and their arguments.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param array $value Array of Customizer settings.
+	 */
 	$settings = apply_filters( 'bp_nouveau_customizer_settings', array(
 		'bp_nouveau_appearance[avatar_style]' => array(
 			'index'             => 'avatar_style',
@@ -171,13 +186,6 @@ function bp_nouveau_customize_register( WP_Customize_Manager $wp_customize ) {
 			'transport'         => 'refresh',
 			'type'              => 'option',
 		),
-		'bp_nouveau_appearance[groups_dir_tabs]' => array(
-			'index'             => 'groups_dir_tabs',
-			'capability'        => 'bp_moderate',
-			'sanitize_callback' => 'absint',
-			'transport'         => 'refresh',
-			'type'              => 'option',
-		),
 		'bp_nouveau_appearance[sites_dir_layout]' => array(
 			'index'             => 'sites_dir_layout',
 			'capability'        => 'bp_moderate',
@@ -207,120 +215,86 @@ function bp_nouveau_customize_register( WP_Customize_Manager $wp_customize ) {
 		$wp_customize->add_setting( $id_setting, $args );
 	}
 
-	$controls = apply_filters( 'bp_nouveau_customizer_controls', array(
+	$controls = array(
 		'bp_site_avatars' => array(
-			'label'      => __( 'Set BP User, Group avatars to rounded style.', 'buddypress' ),
+			'label'      => __( 'Use the round style for member and group avatars.', 'buddypress' ),
 			'section'    => 'bp_nouveau_general_settings',
 			'settings'   => 'bp_nouveau_appearance[avatar_style]',
 			'type'       => 'checkbox',
 		),
 		'user_front_page' => array(
-			'label'      => __( 'Enable default front page for user profiles.', 'buddypress' ),
+			'label'      => __( 'Enable default front page for member profiles.', 'buddypress' ),
 			'section'    => 'bp_nouveau_user_front_page',
 			'settings'   => 'bp_nouveau_appearance[user_front_page]',
 			'type'       => 'checkbox',
 		),
 		'user_front_bio' => array(
-			'label'      => __( 'Display the WordPress Biographical Info of the user.', 'buddypress' ),
+			'label'      => __( 'Display the biographical info from the member\'s WordPress profile.', 'buddypress' ),
 			'section'    => 'bp_nouveau_user_front_page',
 			'settings'   => 'bp_nouveau_appearance[user_front_bio]',
 			'type'       => 'checkbox',
 		),
 		'user_nav_display' => array(
-			'label'      => __( 'Display the User\'s primary nav vertically.', 'buddypress' ),
+			'label'      => __( 'Display the member navigation vertically.', 'buddypress' ),
 			'section'    => 'bp_nouveau_user_primary_nav',
 			'settings'   => 'bp_nouveau_appearance[user_nav_display]',
 			'type'       => 'checkbox',
 		),
 		'user_nav_tabs' => array(
-			'label'      => __( 'Set User nav to tab style.', 'buddypress' ),
+			'label'      => __( 'Use tab styling for primary nav.', 'buddypress' ),
 			'section'    => 'bp_nouveau_user_primary_nav',
 			'settings'   => 'bp_nouveau_appearance[user_nav_tabs]',
 			'type'       => 'checkbox',
 		),
 		'user_subnav_tabs' => array(
-			'label'      => __( 'Set User subnav to tab style.', 'buddypress' ),
+			'label'      => __( 'Use tab styling for secondary nav.', 'buddypress' ),
 			'section'    => 'bp_nouveau_user_primary_nav',
 			'settings'   => 'bp_nouveau_appearance[user_subnav_tabs]',
 			'type'       => 'checkbox',
 		),
 		'user_nav_order' => array(
 			'class'      => 'BP_Nouveau_Nav_Customize_Control',
-			'label'      => __( 'Reorder the Members single items primary navigation.', 'buddypress' ),
+			'label'      => __( 'Reorder the primary navigation for a user.', 'buddypress' ),
 			'section'    => 'bp_nouveau_user_primary_nav',
 			'settings'   => 'bp_nouveau_appearance[user_nav_order]',
 			'type'       => 'user',
 		),
 		'members_layout' => array(
-			'label'      => __( 'Members loop.', 'buddypress' ),
+			'label'      => __( 'Members', 'buddypress' ),
 			'section'    => 'bp_nouveau_loops_layout',
 			'settings'   => 'bp_nouveau_appearance[members_layout]',
 			'type'       => 'select',
 			'choices'    => bp_nouveau_customizer_grid_choices(),
 		),
-		'members_group_layout' => array(
-			'label'      => __( 'Members loop - Single Groups.', 'buddypress' ),
-			'section'    => 'bp_nouveau_loops_layout',
-			'settings'   => 'bp_nouveau_appearance[members_group_layout]',
-			'type'       => 'select',
-			'choices'    => bp_nouveau_customizer_grid_choices(),
-		),
 		'members_friends_layout' => array(
-			'label'      => __( 'Members Friends - User Account.', 'buddypress' ),
+			'label'      => __( 'Member > Friends', 'buddypress' ),
 			'section'    => 'bp_nouveau_loops_layout',
 			'settings'   => 'bp_nouveau_appearance[members_friends_layout]',
 			'type'       => 'select',
 			'choices'    => bp_nouveau_customizer_grid_choices(),
 		),
-		'act_dir_layout' => array(
-			'label'      => __( 'Set Activity dir nav to column.', 'buddypress' ),
-			'section'    => 'bp_nouveau_dir_layout',
-			'settings'   => 'bp_nouveau_appearance[activity_dir_layout]',
-			'type'       => 'checkbox',
-		),
-		'act_dir_tabs' => array(
-			'label'      => __( 'Set Activity nav to tab style.', 'buddypress' ),
-			'section'    => 'bp_nouveau_dir_layout',
-			'settings'   => 'bp_nouveau_appearance[activity_dir_tabs]',
-			'type'       => 'checkbox',
-		),
 		'members_dir_layout' => array(
-			'label'      => __( 'Set Members dir nav to column.', 'buddypress' ),
+			'label'      => __( 'Use column navigation for the Members directory.', 'buddypress' ),
 			'section'    => 'bp_nouveau_dir_layout',
 			'settings'   => 'bp_nouveau_appearance[members_dir_layout]',
 			'type'       => 'checkbox',
 		),
 		'members_dir_tabs' => array(
-			'label'      => __( 'Set Members nav to tab style.', 'buddypress' ),
+			'label'      => __( 'Use tab styling for Members directory navigation.', 'buddypress' ),
 			'section'    => 'bp_nouveau_dir_layout',
 			'settings'   => 'bp_nouveau_appearance[members_dir_tabs]',
 			'type'       => 'checkbox',
 		),
-		'group_dir_layout' => array(
-			'label'      => __( 'Set Groups dir nav to column.', 'buddypress' ),
-			'section'    => 'bp_nouveau_dir_layout',
-			'settings'   => 'bp_nouveau_appearance[groups_dir_layout]',
-			'type'       => 'checkbox',
-		),
-		'group_dir_tabs' => array(
-			'label'      => __( 'Set Groups nav to tab style.', 'buddypress' ),
-			'section'    => 'bp_nouveau_dir_layout',
-			'settings'   => 'bp_nouveau_appearance[groups_dir_tabs]',
-			'type'       => 'checkbox',
-		),
-		'sites_dir_layout' => array(
-			'label'      => __( 'Set Sites dir nav to column.', 'buddypress' ),
-			'section'    => 'bp_nouveau_dir_layout',
-			'settings'   => 'bp_nouveau_appearance[sites_dir_layout]',
-			'type'       => 'checkbox',
-		),
-		'sites_dir_tabs' => array(
-			'label'      => __( 'Set Sites nav to tab style.', 'buddypress' ),
-			'section'    => 'bp_nouveau_dir_layout',
-			'settings'   => 'bp_nouveau_appearance[sites_dir_tabs]',
-			'type'       => 'checkbox',
-		),
-	) );
+	);
+
+	/**
+	 * Filters the BuddyPress Nouveau customizer controls and their arguments.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param array $value Array of Customizer controls.
+	 */
+	$controls = apply_filters( 'bp_nouveau_customizer_controls', $controls );
 
 	// Add the controls to the customizer's section
 	foreach ( $controls as $id_control => $control_args ) {
@@ -349,6 +323,11 @@ function bp_nouveau_customizer_enqueue_scripts() {
 		true
 	);
 
+	/**
+	 * Fires after Nouveau enqueues its required javascript.
+	 *
+	 * @since 3.0.0
+	 */
 	do_action( 'bp_nouveau_customizer_enqueue_scripts' );
 }
 add_action( 'customize_controls_enqueue_scripts', 'bp_nouveau_customizer_enqueue_scripts' );

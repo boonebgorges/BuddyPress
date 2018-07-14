@@ -23,9 +23,11 @@ module.exports = function( grunt ) {
 		// SASS generated "Twenty*"" CSS files
 		BP_SCSS_CSS_FILES = [
 			'!bp-templates/bp-legacy/css/twenty*.css',
-			'!bp-templates/bp-nouveau/css/buddypress.css'
+			'!bp-templates/bp-nouveau/css/buddypress.css',
+			'!bp-core/admin/css/hello.css'
 		],
 
+		autoprefixer = require('autoprefixer'),
 		stylelintConfigCss  = require('stylelint-config-wordpress/index.js'),
 		stylelintConfigScss = require('stylelint-config-wordpress/scss.js');
 
@@ -89,7 +91,7 @@ module.exports = function( grunt ) {
 				indentType: 'tab',
 				indentWidth: '1'
 			},
-			styles: {
+			legacy: {
 				cwd: SOURCE_DIR,
 				extDot: 'last',
 				expand: true,
@@ -106,6 +108,15 @@ module.exports = function( grunt ) {
 				flatten: true,
 				src: ['bp-templates/bp-nouveau/sass/buddypress.scss'],
 				dest: SOURCE_DIR + 'bp-templates/bp-nouveau/css/'
+			},
+			admin: {
+				cwd: SOURCE_DIR,
+				extDot: 'last',
+				expand: true,
+				ext: '.css',
+				flatten: true,
+				src: ['bp-core/admin/sass/*.scss'],
+				dest: SOURCE_DIR + 'bp-core/admin/css/'
 			}
 		},
 		rtlcss: {
@@ -227,7 +238,25 @@ module.exports = function( grunt ) {
 				},
 				expand: true,
 				cwd: SOURCE_DIR,
-				src: [ 'bp-templates/bp-legacy/css/*.scss' ]
+				src: [ '**/*.scss' ]
+			}
+		},
+		postcss: {
+			options: {
+				map: false,
+				processors: [
+					autoprefixer({
+						browsers: ['extends @wordpress/browserslist-config'],
+						cascade: false
+					})
+				],
+				failOnError: false
+			},
+			css: {
+				expand: true,
+				cwd: SOURCE_DIR,
+				dest: SOURCE_DIR,
+				src: BP_CSS.concat( BP_EXCLUDED_CSS, BP_EXCLUDED_MISC )
 			}
 		},
 		cssmin: {
@@ -257,6 +286,11 @@ module.exports = function( grunt ) {
 		exec: {
 			bpdefault: {
 				command: 'svn export --force https://github.com/buddypress/BP-Default.git/trunk bp-themes/bp-default',
+				cwd: BUILD_DIR,
+				stdout: false
+			},
+			cli: {
+				command: 'svn export --force https://github.com/buddypress/wp-cli-buddypress.git/trunk@579 cli',
 				cwd: BUILD_DIR,
 				stdout: false
 			}
@@ -294,9 +328,9 @@ module.exports = function( grunt ) {
 	/**
 	 * Register tasks.
 	 */
-	grunt.registerTask( 'src',     ['checkDependencies', 'jsvalidate:src', 'jshint', 'stylelint', 'sass', 'rtlcss'] );
+	grunt.registerTask( 'src',     ['checkDependencies', 'jsvalidate:src', 'jshint', 'stylelint', 'sass', 'postcss', 'rtlcss'] );
 	grunt.registerTask( 'commit',  ['src', 'checktextdomain', 'imagemin'] );
-	grunt.registerTask( 'build',   ['commit', 'clean:all', 'copy:files', 'uglify', 'jsvalidate:build', 'cssmin', 'makepot', 'exec:bpdefault'] );
+	grunt.registerTask( 'build',   ['commit', 'clean:all', 'copy:files', 'uglify', 'jsvalidate:build', 'cssmin', 'makepot', 'exec:bpdefault', 'exec:cli'] );
 	grunt.registerTask( 'release', ['build'] );
 
 	// Testing tasks.

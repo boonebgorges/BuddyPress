@@ -1,15 +1,22 @@
 <?php
 /**
  * BuddyPress - Groups Create
+ *
+ * @since 3.0.0
+ * @version 3.1.0
  */
 
 bp_nouveau_groups_create_hook( 'before', 'page' ); ?>
 
-	<h2 class="bp-subhead"><?php _e( 'Create A New Group', 'buddypress' ); ?></h2>
+	<h2 class="bp-subhead"><?php esc_html_e( 'Create A New Group', 'buddypress' ); ?></h2>
 
 	<?php bp_nouveau_groups_create_hook( 'before', 'content_template' ); ?>
 
-	<form action="<?php bp_group_creation_form_action(); ?>" method="post" id="create-group-form" class="standard-form" enctype="multipart/form-data">
+	<?php if ( 'group-invites' !== bp_get_groups_current_create_step() ) : ?>
+		<form action="<?php bp_group_creation_form_action(); ?>" method="post" id="create-group-form" class="standard-form" enctype="multipart/form-data">
+	<?php else : ?>
+		<div id="create-group-form" class="standard-form">
+	<?php endif; ?>
 
 		<?php bp_nouveau_groups_create_hook( 'before' ); ?>
 
@@ -18,11 +25,11 @@ bp_nouveau_groups_create_hook( 'before', 'page' ); ?>
 		<div class="item-body" id="group-create-body">
 
 			<nav class="<?php bp_nouveau_groups_create_steps_classes(); ?>" id="group-create-tabs" role="navigation" aria-label="<?php esc_attr_e( 'Group creation menu', 'buddypress' ); ?>">
-				<ul class="group-create-buttons button-tabs">
+				<ol class="group-create-buttons button-tabs">
 
-					<?php bp_nouveau_group_creation_tabs(); ?>
+					<?php bp_group_creation_tabs(); ?>
 
-				</ul>
+				</ol>
 			</nav>
 
 			<?php bp_nouveau_group_creation_screen(); ?>
@@ -31,7 +38,11 @@ bp_nouveau_groups_create_hook( 'before', 'page' ); ?>
 
 		<?php bp_nouveau_groups_create_hook( 'after' ); ?>
 
-	</form>
+	<?php if ( 'group-invites' !== bp_get_groups_current_create_step() ) : ?>
+		</form><!-- #create-group-form -->
+	<?php else : ?>
+		</div><!-- #create-group-form -->
+	<?php endif; ?>
 
 	<?php bp_nouveau_groups_create_hook( 'after', 'content_template' ); ?>
 

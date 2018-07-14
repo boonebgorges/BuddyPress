@@ -3,6 +3,7 @@
  * BP Nouveau Activity Widget template.
  *
  * @since 3.0.0
+ * @version 3.0.0
  */
 ?>
 
@@ -24,13 +25,13 @@
 					<footer>
 
 						<cite>
-							<a href="<?php bp_activity_user_link(); ?>">
+							<a href="<?php bp_activity_user_link(); ?>" class="bp-tooltip" data-bp-tooltip="<?php echo esc_attr( bp_activity_member_display_name() ); ?>">
 								<?php
 								bp_activity_avatar(
 									array(
 										'type'   => 'thumb',
-										'width'  => '40px',
-										'height' => '40px',
+										'width'  => '40',
+										'height' => '40',
 									)
 								);
 								?>

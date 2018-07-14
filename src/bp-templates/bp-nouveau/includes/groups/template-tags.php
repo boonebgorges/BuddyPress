@@ -3,6 +3,7 @@
  * Groups Template tags
  *
  * @since 3.0.0
+ * @version 3.0.0
  */
 
 // Exit if accessed directly.
@@ -18,21 +19,21 @@ function bp_nouveau_before_groups_directory_content() {
 	/**
 	 * Fires at the begining of the templates BP injected content.
 	 *
-	 * @since 2.3.0 (BuddyPress)
+	 * @since 2.3.0
 	 */
 	do_action( 'bp_before_directory_groups_page' );
 
 	/**
 	 * Fires before the display of the groups.
 	 *
-	 * @since 1.1.0 (BuddyPress)
+	 * @since 1.1.0
 	 */
 	do_action( 'bp_before_directory_groups' );
 
 	/**
 	 * Fires before the display of the groups content.
 	 *
-	 * @since 1.1.0 (BuddyPress)
+	 * @since 1.1.0
 	 */
 	do_action( 'bp_before_directory_groups_content' );
 }
@@ -47,28 +48,28 @@ function bp_nouveau_after_groups_directory_content() {
 	/**
 	 * Fires and displays the group content.
 	 *
-	 * @since 1.1.0 (BuddyPress)
+	 * @since 1.1.0
 	 */
 	do_action( 'bp_directory_groups_content' );
 
 	/**
 	 * Fires after the display of the groups content.
 	 *
-	 * @since 1.1.0 (BuddyPress)
+	 * @since 1.1.0
 	 */
 	do_action( 'bp_after_directory_groups_content' );
 
 	/**
 	 * Fires after the display of the groups.
 	 *
-	 * @since 1.1.0 (BuddyPress)
+	 * @since 1.1.0
 	 */
 	do_action( 'bp_after_directory_groups' );
 
 	/**
 	 * Fires at the bottom of the groups directory template file.
 	 *
-	 * @since 1.5.0 (BuddyPress)
+	 * @since 1.5.0
 	 */
 	do_action( 'bp_after_directory_groups_page' );
 }
@@ -109,7 +110,7 @@ function bp_nouveau_groups_create_hook( $when = '', $suffix = '' ) {
 function bp_nouveau_group_hook( $when = '', $suffix = '' ) {
 	$hook = array( 'bp' );
 
-	if ( ! $when ) {
+	if ( $when ) {
 		$hook[] = $when;
 	}
 
@@ -173,7 +174,7 @@ function bp_nouveau_group_invites_interface() {
 	/**
 	 * Fires before the send invites content.
 	 *
-	 * @since 1.1.0 (BuddyPress)
+	 * @since 1.1.0
 	 */
 	do_action( 'bp_before_group_send_invites_content' );
 
@@ -228,7 +229,7 @@ function bp_nouveau_group_creation_tabs() {
 					<?php echo (int) $counter; ?> <?php echo esc_html( $step['name'] ); ?>
 				</a>
 			<?php else : ?>
-				<a disabled="disabled"><?php echo (int) $counter; ?>. <?php echo esc_html( $step['name'] ); ?></a>
+				<?php echo (int) $counter; ?>. <?php echo esc_html( $step['name'] ); ?>
 			<?php endif ?>
 		</li>
 			<?php
@@ -356,8 +357,6 @@ function bp_nouveau_group_manage_screen() {
 					);
 				}
 			}
-
-			wp_nonce_field( $core_screen['nonce'] );
 		}
 	}
 
@@ -413,6 +412,20 @@ function bp_nouveau_group_manage_screen() {
 		do_action( 'bp_after_group_creation_step_buttons' );
 	}
 
+	/**
+	 * Avoid nested forms with the Backbone views for the group invites step.
+	 */
+	if ( 'group-invites' === bp_get_groups_current_create_step() ) {
+		printf(
+			'<form action="%s" method="post" enctype="multipart/form-data">',
+			bp_get_group_creation_form_action()
+		);
+	}
+
+	if ( ! empty( $core_screen['nonce'] ) ) {
+		wp_nonce_field( $core_screen['nonce'] );
+	}
+
 	printf(
 		'<input type="hidden" name="group-id" id="group-id" value="%s" />',
 		$is_group_create ? esc_attr( bp_get_new_group_id() ) : esc_attr( bp_get_group_id() )
@@ -436,6 +449,13 @@ function bp_nouveau_group_manage_screen() {
 		 * @since 1.1.0
 		 */
 		do_action( 'bp_directory_groups_content' );
+	}
+
+	/**
+	 * Avoid nested forms with the Backbone views for the group invites step.
+	 */
+	if ( 'group-invites' === bp_get_groups_current_create_step() ) {
+		echo '</form>';
 	}
 }
 
@@ -496,7 +516,7 @@ function bp_nouveau_groups_loop_buttons( $args = array() ) {
 	/**
 	 * Fires inside the action section of an individual group listing item.
 	 *
-	 * @since 1.1.0 (BuddyPress)
+	 * @since 1.1.0
 	 */
 	do_action( 'bp_directory_groups_actions' );
 	$output .= ob_get_clean();
@@ -747,11 +767,11 @@ function bp_nouveau_groups_manage_members_buttons( $args = array() ) {
 				'button_element'    => $button_element,
 				'parent_attr'       => array(
 					'id'    => '',
-					'class' => $parent_class . ' ' . 'accept',
+					'class' => $parent_class,
 				),
 				'button_attr'       => array(
 					'id'    => '',
-					'class' => 'button',
+					'class' => 'button accept',
 					'rel'   => '',
 				),
 			);
@@ -773,11 +793,11 @@ function bp_nouveau_groups_manage_members_buttons( $args = array() ) {
 				'link_text'         => __( 'Reject', 'buddypress' ),
 				'parent_attr'       => array(
 					'id'    => '',
-					'class' => $parent_class . ' ' . 'reject',
+					'class' => $parent_class,
 				),
 				'button_attr'       => array(
 					'id'    => '',
-					'class' => 'button',
+					'class' => 'button reject',
 					'rel'   => '',
 				),
 			);
@@ -1146,7 +1166,7 @@ function bp_nouveau_group_template_part() {
 	/**
 	 * Fires before the display of the group home body.
 	 *
-	 * @since 1.2.0 (BuddyPress)
+	 * @since 1.2.0
 	 */
 	do_action( 'bp_before_group_body' );
 
@@ -1209,7 +1229,7 @@ function bp_nouveau_group_template_part() {
 	/**
 	 * Fires after the display of the group home body.
 	 *
-	 * @since 1.2.0 (BuddyPress)
+	 * @since 1.2.0
 	 */
 	do_action( 'bp_after_group_body' );
 }
@@ -1229,7 +1249,7 @@ function bp_nouveau_group_header_template_part() {
 	/**
 	 * Fires before the display of a group's header.
 	 *
-	 * @since 1.2.0 (BuddyPress)
+	 * @since 1.2.0
 	 */
 	do_action( 'bp_before_group_header' );
 
@@ -1239,7 +1259,7 @@ function bp_nouveau_group_header_template_part() {
 	/**
 	 * Fires after the display of a group's header.
 	 *
-	 * @since 1.2.0 (BuddyPress)
+	 * @since 1.2.0
 	 */
 	do_action( 'bp_after_group_header' );
 

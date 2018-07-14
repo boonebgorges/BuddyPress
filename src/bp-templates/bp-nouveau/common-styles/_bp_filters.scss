@@ -1,6 +1,7 @@
 // BP Directory Filters
 // Specific Styling & Positioning
 // N.B. See _bp_navigation for additional rules and properties.
+// @version 3.0.0.
 .buddypress-wrap {
 
 	.dir-component-filters { // ul
@@ -15,11 +16,12 @@
 
 	// User account filters .subnav-filters
 
+	@include clearfix-element(".subnav-filters");
+
 	.subnav-filters {
 		background: none;
-		overflow: hidden;
 		list-style: none;
-		margin: $marg-med 0;
+		margin: $marg-med 0 0;
 		padding: 0;
 
 		div {
@@ -37,10 +39,12 @@
 				width: 100%;
 			}
 
-			@include medium-max {
+			.messages-search {
+				margin-bottom: 1em;
 
-				.messages-search {
-					clear: both;
+				@include medium-up {
+
+					margin-bottom: 0;
 				}
 			}
 		}
@@ -84,23 +88,34 @@
 			@include clearfix-element(".bulk-actions-wrap");
 
 			.bulk-actions-wrap {
-				border: 1px solid $bp-border-color;
-				float: left;
+
+				&.bp-show {
+					display: inline-block;
+				}
+
+				&.bp-hide {
+					display: none;
+				}
 			}
 
 			.select-wrap {
 				border: 0;
 			}
 
-			.bulk-actions,
-			label {
+			.select-wrap:focus,
+			.select-wrap:hover {
+				outline: 1px solid $med-light-grey;
+			}
+
+			.bulk-actions {
 				float: left;
 			}
 
 			label {
+				display: inline-block;
+				font-weight: 300;
+				margin-right: 25px;
 				padding: 5px 0;
-				text-align: center;
-				width: 30px;
 			}
 
 			div {
@@ -111,8 +126,8 @@
 			}
 
 			.bulk-apply {
-				border-radius: none;
 				border: 0;
+				border-radius: none;
 				font-weight: 400;
 				line-height: 1.8;
 				margin: 0 0 0 10px;
@@ -165,5 +180,25 @@
 		} // @media
 
 	} // close .subnav-filters
+
+	.notifications-options-nav {
+
+		input#notification-bulk-manage {
+			border: 0;
+			border-radius: 0;
+			line-height: 1.6;
+		}
+	}
+
+	.group-subnav-filters {
+
+		.group-invites-search {
+			margin-bottom: 1em;
+		}
+
+		.last {
+			text-align: center;
+		}
+	}
 
 } // close .buddypress-wrap

@@ -1,6 +1,7 @@
 /* global wp, bp, BP_Nouveau, JSON */
 /* jshint devel: true */
 /* jshint browser: true */
+/* @version 3.0.0 */
 window.wp = window.wp || {};
 window.bp = window.bp || {};
 
@@ -48,7 +49,6 @@ window.bp = window.bp || {};
 			// Object Globals
 			this.objects                = $.map( BP_Nouveau.objects, function( value ) { return value; } );
 			this.objectNavParent        = BP_Nouveau.object_nav_parent;
-			this.time_since             = BP_Nouveau.time_since;
 
 			// HeartBeat Global
 			this.heartbeat              = wp.heartbeat || {};
@@ -104,8 +104,8 @@ window.bp = window.bp || {};
 				store = {};
 			}
 
-			if ( undefined !== property && store[property] ) {
-				return store[property];
+			if ( undefined !== property ) {
+				return store[property] || false;
 			}
 
 			return store;
@@ -192,7 +192,7 @@ window.bp = window.bp || {};
 			/**
 			 * How the content should be injected in the selector
 			 *
-			 * possible methodes are
+			 * possible methods are
 			 * - reset: the selector will be reset with the content
 			 * - append:  the content will be added after selector's content
 			 * - prepend: the content will be added before selector's content
@@ -206,74 +206,9 @@ window.bp = window.bp || {};
 			} else {
 				$( selector ).html( content );
 			}
-		},
 
-		/**
-		 * [updateTimeSince description]
-		 * @param  {[type]} timestamp [description]
-		 * @return {[type]}           [description]
-		 */
-		updateTimeSince: function( timestamp ) {
-			var now = new Date( $.now() ), diff, count_1, chunk_1, count_2, chunk_2,
-				time_since = [], time_chunks = $.extend( {}, this.time_since.time_chunks ), ms;
-
-			// Returns sometime
-			if ( undefined === timestamp ) {
-				return this.time_since.sometime;
-			}
-
-			// Javascript timestamps are in ms.
-			timestamp = new Date( timestamp * 1000 );
-
-			// Calculate the diff
-			diff = now - timestamp;
-
-			// Returns right now
-			if ( 0 === diff ) {
-				return this.time_since.now;
-			}
-
-			$.each( time_chunks, function( c, chunk ) {
-				var milliseconds = chunk * 1000;
-				var rounded_time = Math.floor( diff / milliseconds );
-
-				if ( 0 !== rounded_time && ! chunk_1 ) {
-					chunk_1 = c;
-					count_1 = rounded_time;
-					ms      = milliseconds;
-				}
-			} );
-
-			// First chunk
-			chunk_1 = chunk_1.substr( 2 );
-			time_since.push( ( 1 === count_1 ) ? this.time_since[ chunk_1 ].replace( '%', count_1 ) : this.time_since[ chunk_1 + 's' ].replace( '%', count_1 ) );
-
-			// Remove Year from chunks
-			delete time_chunks.a_year;
-
-			$.each( time_chunks, function( c, chunk ) {
-				var milliseconds = chunk * 1000;
-				var rounded_time = Math.floor( ( diff - ( ms * count_1 ) ) / milliseconds );
-
-				if ( 0 !== rounded_time && ! chunk_2 ) {
-					chunk_2 = c;
-					count_2 = rounded_time;
-				}
-			} );
-
-			// Second chunk
-			if ( undefined !== chunk_2 ) {
-				chunk_2 = chunk_2.substr( 2 );
-				time_since.push( ( 1 === count_2 ) ? this.time_since[ chunk_2 ].replace( '%', count_2 ) : this.time_since[ chunk_2 + 's' ].replace( '%', count_2 ) );
-			}
-
-			// Returns x time, y time ago
-			if ( time_since.length >= 1 ) {
-				return this.time_since.ago.replace( '%', time_since.join( this.time_since.separator + ' ' ) );
-
-			// Returns sometime
-			} else {
-				return this.time_since.sometime;
+			if ( 'undefined' !== typeof bp_mentions || 'undefined' !== typeof bp.mentions ) {
+				$( '.bp-suggestions' ).bp_mentions( bp.mentions.users );
 			}
 		},
 
@@ -325,8 +260,8 @@ window.bp = window.bp || {};
 			$( '#buddypress [data-bp-filter="' + data.object + '"] option[value="' + data.filter + '"]' ).prop( 'selected', true );
 
 			if ( 'friends' === data.object || 'group_members' === data.object ) {
-				data.object = 'members';
 				data.template = data.object;
+				data.object   = 'members';
 			} else if ( 'group_requests' === data.object ) {
 				data.object = 'groups';
 				data.template = 'group_requests';
@@ -475,7 +410,7 @@ window.bp = window.bp || {};
 			// Disabled inputs
 			$( '[data-bp-disable-input]' ).on( 'change', this.toggleDisabledInput );
 
-			// HeartBeat Send and Recieve
+			// HeartBeat Send and Receive
 			$( document ).on( 'heartbeat-send.buddypress', this.heartbeatSend );
 			$( document ).on( 'heartbeat-tick.buddypress', this.heartbeatTick );
 
@@ -717,7 +652,7 @@ window.bp = window.bp || {};
 				nonce = self.getLinkParams( target.prop( 'href' ), '_wpnonce' );
 			}
 
-			// Unforunately unlike groups
+			// Unfortunately unlike groups
 			// Friends actions does not match the wpnonce
 			var friends_actions_map = {
 				is_friend         : 'remove_friend',

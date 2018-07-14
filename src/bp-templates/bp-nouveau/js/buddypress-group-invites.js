@@ -1,4 +1,5 @@
 /* global wp, bp, BP_Nouveau, _, Backbone */
+/* @version 4.0.0 */
 window.wp = window.wp || {};
 window.bp = window.bp || {};
 
@@ -72,7 +73,7 @@ window.bp = window.bp || {};
 				this.navItems.add( {
 					id     : item.id,
 					name   : item.caption,
-					href   : '#',
+					href   : item.href || '#members-list',
 					active : activeView,
 					hide   : _.isUndefined( item.hide ) ? 0 : item.hide
 				} );
@@ -338,18 +339,13 @@ window.bp = window.bp || {};
 	bp.Views.Feedback = bp.Nouveau.GroupInvites.View.extend( {
 		tagName   : 'div',
 		className : 'bp-invites-feedback',
+		template  : bp.template( 'bp-group-invites-feedback' ),
 
 		initialize: function() {
-			this.value = this.options.value;
-
-			if ( this.options.type ) {
-				this.el.className += ' ' + this.options.type;
-			}
-		},
-
-		render: function() {
-			this.$el.html( this.value );
-			return this;
+			this.model = new Backbone.Model( {
+				type: this.options.type || 'info',
+				message: this.options.value
+			} );
 		}
 	} );
 
@@ -364,6 +360,8 @@ window.bp = window.bp || {};
 		initialize: function() {
 			this.collection.on( 'add', this.outputNav, this );
 			this.collection.on( 'change:hide', this.showHideNavItem, this );
+
+			window.onbeforeunload = _.bind( this.confirmQuit, this );
 		},
 
 		outputNav: function( nav ) {
@@ -428,6 +426,14 @@ window.bp = window.bp || {};
 					nav.set( 'active', 0 );
 				}
 			}, this );
+		},
+
+		confirmQuit: function() {
+			if ( bp.Nouveau.GroupInvites.invites && bp.Nouveau.GroupInvites.invites.length ) {
+				$( '[data-nav="invites"]' ).focus();
+
+				return false;
+			}
 		}
 	} );
 
@@ -465,7 +471,7 @@ window.bp = window.bp || {};
 			if ( $( this.el ).find( 'span' ).length ) {
 				$( this.el ).find( 'span' ).html( span_count );
 			} else {
-				$( this.el ).find( 'a' ).append( $( '<span></span>' ).html( span_count ) );
+				$( this.el ).find( 'a' ).append( $( '<span class="count"></span>' ).html( span_count ) );
 			}
 		},
 
@@ -479,7 +485,7 @@ window.bp = window.bp || {};
 	} );
 
 	bp.Views.Pagination = bp.Nouveau.GroupInvites.View.extend( {
-		tagName   : 'li',
+		tagName   : 'div',
 		className : 'last',
 		template  :  bp.template( 'bp-invites-paginate' )
 	} );
@@ -504,6 +510,10 @@ window.bp = window.bp || {};
 			_.each( this.views._views[''], function( view ) {
 				view.remove();
 			} );
+
+			if ( 1 === collection.options.total_page ) {
+				return;
+			}
 
 			this.views.add( new bp.Views.Pagination( { model: new Backbone.Model( collection.options ) } ) );
 		},
@@ -617,9 +627,18 @@ window.bp = window.bp || {};
 			var invite = bp.Nouveau.GroupInvites.invites.get( this.model.get( 'id' ) );
 
 			if ( invite ) {
-				this.el.className = 'selected';
 				this.model.set( 'selected', true, { silent: true } );
 			}
+		},
+
+		render: function() {
+			if ( this.model.get( 'selected' ) ) {
+				this.el.className = 'selected';
+			} else {
+				this.el.className = '';
+			}
+
+			bp.Nouveau.GroupInvites.View.prototype.render.apply( this, arguments );
 		},
 
 		toggleUser: function( event ) {
@@ -629,19 +648,16 @@ window.bp = window.bp || {};
 
 			if ( false === selected ) {
 				this.model.set( 'selected', true );
-
-				// Set the selected class
-				$( this.el ).addClass( 'selected' );
 			} else {
 				this.model.set( 'selected', false );
-
-				// Set the selected class
-				$( this.el ).removeClass( 'selected' );
 
 				if ( ! bp.Nouveau.GroupInvites.invites.length  ) {
 					bp.Nouveau.GroupInvites.invites.reset();
 				}
 			}
+
+			// Rerender to update buttons.
+			this.render();
 		},
 
 		removeInvite: function( event ) {
@@ -705,6 +721,8 @@ window.bp = window.bp || {};
 
 			$( this.el ).addClass( 'bp-hide' );
 
+			bp.Nouveau.GroupInvites.displayFeedback( BP_Nouveau.group_invites.invites_sending, 'info' );
+
 			this.collection.sync( 'create', _.pluck( this.collection.models, 'id' ), {
 				success : _.bind( this.invitesSent, this ),
 				error   : _.bind( this.invitesError, this ),
@@ -758,7 +776,7 @@ window.bp = window.bp || {};
 				view.remove();
 			} );
 
-			bp.Nouveau.GroupInvites.displayFeedback( BP_Nouveau.group_invites.invites_form_reset, 'help' );
+			bp.Nouveau.GroupInvites.displayFeedback( BP_Nouveau.group_invites.invites_form_reset, 'success' );
 		}
 	} );
 
@@ -796,6 +814,16 @@ window.bp = window.bp || {};
 
 		initialize: function() {
 			this.model.on( 'change:selected', this.removeView, this );
+
+			// Build the BP Tooltip.
+			if ( ! this.model.get( 'uninviteTooltip' ) ) {
+				this.model.set( 'uninviteTooltip',
+					BP_Nouveau.group_invites.removeUserInvite.replace( '%s', this.model.get( 'name' ) ),
+					{ silent: true }
+				);
+			}
+
+			this.el.id = 'uninvite-user-' + this.model.get( 'id' );
 		},
 
 		removeSelection: function( event ) {

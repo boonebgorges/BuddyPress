@@ -2,6 +2,7 @@
 // Layouts provides classes to handle specific module
 // layouts on a user selectable basis.
 // The sheet also adds layout properties such as border-box
+// @version 3.0.0
 
 #item-body,
 .single-screen-navs {
@@ -456,11 +457,12 @@
 
 	.bp-single-vert-nav { // described for the #buddypress element
 
-		.vertical {
+		.bp-navs.vertical {
 			overflow: visible;
 
 			ul {
 				border-right: 1px solid $med-light-grey;
+				border-bottom: 0;
 				float: left;
 				margin-right: -1px;
 				width: 25%;
@@ -468,6 +470,7 @@
 
 			li {
 				float: none;
+				margin-right: 0;
 
 				&.selected a {
 					background: $grey;
@@ -491,6 +494,16 @@
 				}
 			} // li
 
+		}
+
+		.bp-navs.vertical.tabbed-links {
+
+			li.selected {
+
+				a {
+					padding-left: 0;
+				}
+			}
 		}
 
 		// re-factor the related elements like the #item-body so it sits

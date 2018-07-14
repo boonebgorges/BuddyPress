@@ -3,9 +3,13 @@
  * BuddyPress - Members Friends Requests
  *
  * @since 3.0.0
+ * @version 3.0.0
  */
+?>
 
-bp_nouveau_member_hook( 'before', 'friend_requests_content' ); ?>
+<h2 class="screen-heading friendship-requests-screen"><?php esc_html_e( 'Friendship Requests', 'buddypress' ); ?></h2>
+
+<?php bp_nouveau_member_hook( 'before', 'friend_requests_content' ); ?>
 
 <?php if ( bp_has_members( 'type=alphabetical&include=' . bp_get_friendship_requests() ) ) : ?>
 
@@ -19,7 +23,7 @@ bp_nouveau_member_hook( 'before', 'friend_requests_content' ); ?>
 
 			<li id="friendship-<?php bp_friend_friendship_id(); ?>" <?php bp_member_class( array( 'item-entry' ) ); ?> data-bp-item-id="<?php bp_friend_friendship_id(); ?>" data-bp-item-component="members">
 				<div class="item-avatar">
-					<a href="<?php bp_member_link(); ?>"><?php bp_member_avatar(); ?></a>
+					<a href="<?php bp_member_link(); ?>"><?php bp_member_avatar( array( 'type' => 'full' ) ); ?></a>
 				</div>
 
 				<div class="item">

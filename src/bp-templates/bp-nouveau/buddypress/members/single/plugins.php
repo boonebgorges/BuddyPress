@@ -6,6 +6,7 @@
  * support to their plugins for the members component.
  *
  * @since 3.0.0
+ * @version 3.0.0
  */
 
 bp_nouveau_member_hook( 'before', 'plugin_template' ); ?>
@@ -26,7 +27,7 @@ bp_nouveau_member_hook( 'before', 'plugin_template' ); ?>
 
 <?php if ( has_action( 'bp_template_title' ) ) : ?>
 
-	<h3><?php bp_nouveau_plugin_hook( 'title' ); ?></h3>
+	<h2><?php bp_nouveau_plugin_hook( 'title' ); ?></h2>
 
 <?php endif; ?>
 

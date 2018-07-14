@@ -358,29 +358,73 @@ function groups_record_activity( $args = '' ) {
 }
 
 /**
- * Update the last_activity meta value for a given group.
+ * Function used to determine if a user can comment on a group activity item.
  *
- * @since 1.0.0
+ * Used as a filter callback to 'bp_activity_can_comment'.
  *
- * @param int $group_id Optional. The ID of the group whose last_activity is
- *                      being updated. Default: the current group's ID.
- * @return false|null False on failure.
+ * @since 3.0.0
+ *
+ * @param  bool                      $retval   True if item can receive comments.
+ * @param  null|BP_Activity_Activity $activity Null by default. Pass an activity object to check against that instead.
+ * @return bool
  */
-function groups_update_last_activity( $group_id = 0 ) {
-
-	if ( empty( $group_id ) ) {
-		$group_id = buddypress()->groups->current_group->id;
+function bp_groups_filter_activity_can_comment( $retval, $activity = null ) {
+	// Bail if item cannot receive comments or if no current user.
+	if ( empty( $retval ) || ! is_user_logged_in() ) {
+		return $retval;
 	}
 
-	if ( empty( $group_id ) ) {
-		return false;
+	// Use passed activity object, if available.
+	if ( is_a( $activity, 'BP_Activity_Activity' ) ) {
+		$component = $activity->component;
+		$group_id  = $activity->item_id;
+
+	// Use activity info from current activity item in the loop.
+	} else {
+		$component = bp_get_activity_object_name();
+		$group_id  = bp_get_activity_item_id();
 	}
 
-	groups_update_groupmeta( $group_id, 'last_activity', bp_core_current_time() );
+	// If not a group activity item, bail.
+	if ( 'groups' !== $component ) {
+		return $retval;
+	}
+
+	// If current user is not a group member or is banned, user cannot comment.
+	if ( ! bp_current_user_can( 'bp_moderate' ) &&
+		( ! groups_is_user_member( bp_loggedin_user_id(), $group_id ) || groups_is_user_banned( bp_loggedin_user_id(), $group_id ) )
+	) {
+		$retval = false;
+	}
+
+	return $retval;
 }
-add_action( 'groups_join_group',           'groups_update_last_activity' );
-add_action( 'groups_leave_group',          'groups_update_last_activity' );
-add_action( 'groups_created_group',        'groups_update_last_activity' );
+add_filter( 'bp_activity_can_comment', 'bp_groups_filter_activity_can_comment', 99, 1 );
+
+/**
+ * Function used to determine if a user can reply on a group activity comment.
+ *
+ * Used as a filter callback to 'bp_activity_can_comment_reply'.
+ *
+ * @since 3.0.0
+ *
+ * @param  bool        $retval  True if activity comment can be replied to.
+ * @param  object|bool $comment Current activity comment object. If empty, parameter is boolean false.
+ * @return bool
+ */
+function bp_groups_filter_activity_can_comment_reply( $retval, $comment ) {
+	// Bail if no current user, if comment is empty or if retval is already empty.
+	if ( ! is_user_logged_in() || empty( $comment ) || empty( $retval ) ) {
+		return $retval;
+	}
+
+	// Grab parent activity item.
+	$parent = new BP_Activity_Activity( $comment->item_id );
+
+	// Check to see if user can reply to parent group activity item.
+	return bp_groups_filter_activity_can_comment( $retval, $parent );
+}
+add_filter( 'bp_activity_can_comment_reply', 'bp_groups_filter_activity_can_comment_reply', 99, 2 );
 
 /**
  * Add an activity stream item when a member joins a group.

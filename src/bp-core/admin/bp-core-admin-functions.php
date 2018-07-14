@@ -357,14 +357,14 @@ function bp_do_activation_redirect() {
 		return;
 	}
 
-	$query_args = array( 'page' => 'bp-about' );
+	$query_args = array();
 	if ( get_transient( '_bp_is_new_install' ) ) {
 		$query_args['is_new_install'] = '1';
 		delete_transient( '_bp_is_new_install' );
 	}
 
-	// Redirect to BuddyPress about page.
-	wp_safe_redirect( add_query_arg( $query_args, bp_get_admin_url( 'index.php' ) ) );
+	// Redirect to dashboard and trigger the Hello screen.
+	wp_safe_redirect( add_query_arg( $query_args, bp_get_admin_url( '?hello=buddypress' ) ) );
 }
 
 /** UI/Styling ****************************************************************/
@@ -421,13 +421,17 @@ function bp_core_get_admin_tabs( $active_tab = '' ) {
 			'href' => bp_get_admin_url( add_query_arg( array( 'page' => 'bp-components' ), 'admin.php' ) ),
 			'name' => __( 'Components', 'buddypress' )
 		),
+		'2' => array(
+			'href' => bp_get_admin_url( add_query_arg( array( 'page' => 'bp-settings' ), 'admin.php' ) ),
+			'name' => __( 'Options', 'buddypress' )
+		),
 		'1' => array(
 			'href' => bp_get_admin_url( add_query_arg( array( 'page' => 'bp-page-settings' ), 'admin.php' ) ),
 			'name' => __( 'Pages', 'buddypress' )
 		),
-		'2' => array(
-			'href' => bp_get_admin_url( add_query_arg( array( 'page' => 'bp-settings' ), 'admin.php' ) ),
-			'name' => __( 'Options', 'buddypress' )
+		'3' => array(
+			'href' => bp_get_admin_url( add_query_arg( array( 'page' => 'bp-credits' ), 'admin.php' ) ),
+			'name' => __( 'Credits', 'buddypress' )
 		),
 	);
 

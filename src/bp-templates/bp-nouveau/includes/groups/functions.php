@@ -3,6 +3,7 @@
  * Groups functions
  *
  * @since 3.0.0
+ * @version 3.1.0
  */
 
 // Exit if accessed directly.
@@ -23,7 +24,7 @@ function bp_nouveau_message_markup_wrapper( $message, $type ) {
 		return false;
 	}
 
-	$message = '<div class="bp-feedback ' . $type . '"><span class="bp-icon" aria-hidden="true"></span><p>' . $message . '</p></div>';
+	$message = '<div class=" ' . esc_attr( "bp-feedback {$type}" ) . '"><span class="bp-icon" aria-hidden="true"></span><p>' . esc_html( $message ) . '</p></div>';
 
 	return $message;
 }
@@ -112,13 +113,32 @@ function bp_nouveau_groups_localize_scripts( $params = array() ) {
 
 	// Init the Group invites nav
 	$invites_nav = array(
-		'members' => array( 'id' => 'members', 'caption' => __( 'All Members', 'buddypress' ), 'order' => 5 ),
-		'invited' => array( 'id' => 'invited', 'caption' => __( 'Pending Invites', 'buddypress' ), 'order' => 90, 'hide' => (int) ! $show_pending ),
-		'invites' => array( 'id' => 'invites', 'caption' => __( 'Send invites', 'buddypress' ), 'order' => 100, 'hide' => 1 ),
+		'members' => array(
+			'id'      => 'members',
+			'caption' => __( 'All Members', 'buddypress' ),
+			'order'   => 5,
+		),
+		'invited' => array(
+			'id'      => 'invited',
+			'caption' => __( 'Pending Invites', 'buddypress' ),
+			'order'   => 90,
+			'hide'    => (int) ! $show_pending,
+		),
+		'invites' => array(
+			'id'      => 'invites',
+			'caption' => __( 'Send Invites', 'buddypress' ),
+			'order'   => 100,
+			'hide'    => 1,
+			'href'    => '#send-invites-editor',
+		),
 	);
 
 	if ( bp_is_active( 'friends' ) ) {
-		$invites_nav['friends'] = array( 'id' => 'friends', 'caption' => __( 'My friends', 'buddypress' ), 'order' => 0 );
+		$invites_nav['friends'] = array(
+			'id'      => 'friends',
+			'caption' => __( 'My Friends', 'buddypress' ),
+			'order'   => 0,
+		);
 
 		if ( true === bp_nouveau_groups_disallow_all_members_invites() ) {
 			unset( $invites_nav['members'] );
@@ -127,10 +147,11 @@ function bp_nouveau_groups_localize_scripts( $params = array() ) {
 
 	$params['group_invites'] = array(
 		'nav'                => bp_sort_by_key( $invites_nav, 'order', 'num' ),
-		'loading'            => bp_nouveau_message_markup_wrapper( __( 'Loading members, please wait.', 'buddypress' ), 'loading' ),
-		'invites_form'       => bp_nouveau_message_markup_wrapper( __( 'Use the "Send" button to send your invite, or the "Cancel" button to abort.', 'buddypress' ), 'info' ),
-		'invites_form_reset' => bp_nouveau_message_markup_wrapper( __( 'Invites cleared, please use one of the available tabs to select members to invite.', 'buddypress' ), 'success' ),
-		'invites_sending'    => bp_nouveau_message_markup_wrapper( __( 'Sending the invites, please wait.', 'buddypress' ), 'loading' ),
+		'loading'            => __( 'Loading members. Please wait.', 'buddypress' ),
+		'invites_form'       => __( 'Use the "Send" button to send your invite or the "Cancel" button to abort.', 'buddypress' ),
+		'invites_form_reset' => __( 'Group invitations cleared. Please use one of the available tabs to select members to invite.', 'buddypress' ),
+		'invites_sending'    => __( 'Sending group invitations. Please wait.', 'buddypress' ),
+		'removeUserInvite'   => __( 'Cancel invitation %s', 'buddypress' ),
 		'group_id'           => ! bp_get_current_group_id() ? bp_get_new_group_id() : bp_get_current_group_id(),
 		'is_group_create'    => bp_is_group_create(),
 		'nonces'             => array(
@@ -203,10 +224,18 @@ function bp_nouveau_prepare_group_potential_invites_for_js( $user ) {
 		if ( bp_is_item_admin() ) {
 			$response['can_edit'] = true;
 		} else {
-			$response['can_edit'] = in_array( bp_loggedin_user_id(), $inviter_ids );
+			$response['can_edit'] = in_array( bp_loggedin_user_id(), $inviter_ids, true );
 		}
 	}
 
+	/**
+	 * Filters the response value for potential group invite data for use with javascript.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param array   $response Array of invite data.
+	 * @param WP_User $user User object.
+	 */
 	return apply_filters( 'bp_nouveau_prepare_group_potential_invites_for_js', $response, $user );
 }
 
@@ -265,18 +294,17 @@ function bp_nouveau_get_group_potential_invites( $args = array() ) {
 
 /**
  * @since 3.0.0
- * @todo I don't see any reason why to restrict group invites to friends..
  */
 function bp_nouveau_group_invites_create_steps( $steps = array() ) {
 	if ( bp_is_active( 'friends' ) && isset( $steps['group-invites'] ) ) {
 		// Simply change the name
-		$steps['group-invites']['name'] = _x( 'Invite', 'Group screen nav', 'buddypress' );
+		$steps['group-invites']['name'] = _x( 'Invite', 'Group invitations menu title', 'buddypress' );
 		return $steps;
 	}
 
 	// Add the create step if friends component is not active
 	$steps['group-invites'] = array(
-		'name'     => _x( 'Invite', 'Group screen nav', 'buddypress' ),
+		'name'     => _x( 'Invite', 'Group invitations menu title', 'buddypress' ),
 		'position' => 30,
 	);
 
@@ -296,7 +324,7 @@ function bp_nouveau_group_setup_nav() {
 		$bp = buddypress();
 
 		$bp->groups->nav->edit_nav(
-			array( 'name' => _x( 'Invite', 'My Group screen nav', 'buddypress' ) ),
+			array( 'name' => _x( 'Invite', 'Group invitations menu title', 'buddypress' ) ),
 			'send-invites',
 			bp_get_current_group_slug()
 		);
@@ -307,7 +335,7 @@ function bp_nouveau_group_setup_nav() {
 		$group_link    = bp_get_group_permalink( $current_group );
 
 		bp_core_new_subnav_item( array(
-			'name'            => _x( 'Invite', 'My Group screen nav', 'buddypress' ),
+			'name'            => _x( 'Invite', 'Group invitations menu title', 'buddypress' ),
 			'slug'            => 'send-invites',
 			'parent_url'      => $group_link,
 			'parent_slug'     => $current_group->slug,
@@ -365,7 +393,7 @@ function bp_nouveau_prepare_group_for_js( $item ) {
 		'name'        => $item->name,
 		'avatar_url'  => $item_avatar_url,
 		'object_type' => 'group',
-		'is_public'   => 'public' === $item->status,
+		'is_public'   => ( 'public' === $item->status ),
 	);
 }
 
@@ -383,7 +411,7 @@ function bp_nouveau_groups_invites_restriction_nav() {
 	}
 
 	bp_core_new_subnav_item( array(
-		'name'            => _x( 'Group Invites', 'My Group Invites settings screen nav', 'buddypress' ),
+		'name'            => _x( 'Group Invites', 'Group invitations main menu title', 'buddypress' ),
 		'slug'            => 'invites',
 		'parent_url'      => trailingslashit( $user_domain . $slug ),
 		'parent_slug'     => $slug,
@@ -411,7 +439,7 @@ function bp_nouveau_groups_invites_restriction_admin_nav( $wp_admin_nav ) {
 	$wp_admin_nav[] = array(
 		'parent' => 'my-account-' . buddypress()->settings->id,
 		'id'     => 'my-account-' . buddypress()->settings->id . '-invites',
-		'title'  => _x( 'Group Invites', 'My Account Settings sub nav', 'buddypress' ),
+		'title'  => _x( 'Group Invites', 'Group invitations main menu title', 'buddypress' ),
 		'href'   => trailingslashit( $settings_link . 'invites/' ),
 	);
 
@@ -600,7 +628,7 @@ function bp_nouveau_get_hooked_group_meta() {
 	/**
 	 * Fires after inside the group header item meta section.
 	 *
-	 * @since 1.2.0 (BuddyPress)
+	 * @since 1.2.0
 	 */
 	do_action( 'bp_group_header_meta' );
 
@@ -655,16 +683,16 @@ function bp_nouveau_groups_front_page_description() {
 function bp_nouveau_groups_customizer_sections( $sections = array() ) {
 	return array_merge( $sections, array(
 		'bp_nouveau_group_front_page' => array(
-			'title'       => __( 'Group\'s front page', 'buddypress' ),
+			'title'       => __( 'Group front page', 'buddypress' ),
 			'panel'       => 'bp_nouveau_panel',
 			'priority'    => 20,
-			'description' => __( 'Set your preferences for the groups default front page.', 'buddypress' ),
+			'description' => __( 'Configure the default front page for groups.', 'buddypress' ),
 		),
 		'bp_nouveau_group_primary_nav' => array(
-			'title'       => __( 'Group\'s navigation', 'buddypress' ),
+			'title'       => __( 'Group navigation', 'buddypress' ),
 			'panel'       => 'bp_nouveau_panel',
 			'priority'    => 40,
-			'description' => __( 'Customize the groups primary navigations. Navigate to any random group to live preview your changes.', 'buddypress' ),
+			'description' => __( 'Customize the navigation menu for groups. See your changes by navigating to a group in the live-preview window.', 'buddypress' ),
 		),
 	) );
 }
@@ -743,6 +771,13 @@ function bp_nouveau_groups_customizer_settings( $settings = array() ) {
 			'transport'         => 'refresh',
 			'type'              => 'option',
 		),
+		'bp_nouveau_appearance[groups_dir_tabs]' => array(
+			'index'             => 'groups_dir_tabs',
+			'capability'        => 'bp_moderate',
+			'sanitize_callback' => 'absint',
+			'transport'         => 'refresh',
+			'type'              => 'option',
+		),
 	) );
 }
 
@@ -758,60 +793,79 @@ function bp_nouveau_groups_customizer_settings( $settings = array() ) {
 function bp_nouveau_groups_customizer_controls( $controls = array() ) {
 	return array_merge( $controls, array(
 		'group_front_page' => array(
-			'label'      => __( 'Enable default front page for groups.', 'buddypress' ),
+			'label'      => __( 'Enable custom front pages for groups.', 'buddypress' ),
 			'section'    => 'bp_nouveau_group_front_page',
 			'settings'   => 'bp_nouveau_appearance[group_front_page]',
 			'type'       => 'checkbox',
 		),
 		'group_front_boxes' => array(
-			'label'      => __( 'Enable widget region for groups homepage - allows widgets to be added to a sidebar in widgets screen.', 'buddypress' ),
+			'label'      => __( 'Enable widget region for group homepages. When enabled, the site admin can add widgets to group pages via the Widgets panel.', 'buddypress' ),
 			'section'    => 'bp_nouveau_group_front_page',
 			'settings'   => 'bp_nouveau_appearance[group_front_boxes]',
 			'type'       => 'checkbox',
 		),
 		'group_front_description' => array(
-			'label'      => __( 'Display the Group\'s description in the front page body.', 'buddypress' ),
+			'label'      => __( "Display the group description in the body of the group's front page.", 'buddypress' ),
 			'section'    => 'bp_nouveau_group_front_page',
 			'settings'   => 'bp_nouveau_appearance[group_front_description]',
 			'type'       => 'checkbox',
 		),
 		'group_nav_display' => array(
-			'label'      => __( 'Display the Group\'s primary nav vertically.', 'buddypress' ),
+			'label'      => __( 'Display the group navigation vertically.', 'buddypress' ),
 			'section'    => 'bp_nouveau_group_primary_nav',
 			'settings'   => 'bp_nouveau_appearance[group_nav_display]',
 			'type'       => 'checkbox',
 		),
 		'group_nav_tabs' => array(
-		'label'      => __( 'Set primary nav to tab style.', 'buddypress' ),
-		'section'    => 'bp_nouveau_group_primary_nav',
-		'settings'   => 'bp_nouveau_appearance[group_nav_tabs]',
-		'type'       => 'checkbox',
+			'label'      => __( 'Use tab styling for primary navigation.', 'buddypress' ),
+			'section'    => 'bp_nouveau_group_primary_nav',
+			'settings'   => 'bp_nouveau_appearance[group_nav_tabs]',
+			'type'       => 'checkbox',
 		),
 		'group_subnav_tabs' => array(
-		'label'      => __( 'Set subnavs to tab style.', 'buddypress' ),
-		'section'    => 'bp_nouveau_group_primary_nav',
-		'settings'   => 'bp_nouveau_appearance[group_subnav_tabs]',
-		'type'       => 'checkbox',
+			'label'      => __( 'Use tab styling for secondary navigation.', 'buddypress' ),
+			'section'    => 'bp_nouveau_group_primary_nav',
+			'settings'   => 'bp_nouveau_appearance[group_subnav_tabs]',
+			'type'       => 'checkbox',
 		),
 		'groups_create_tabs' => array(
-		'label'      => __( 'Set groups create steps to tab style.', 'buddypress' ),
-		'section'    => 'bp_nouveau_group_primary_nav',
-		'settings'   => 'bp_nouveau_appearance[groups_create_tabs]',
-		'type'       => 'checkbox',
+			'label'      => __( 'Use tab styling for the group creation process.', 'buddypress' ),
+			'section'    => 'bp_nouveau_group_primary_nav',
+			'settings'   => 'bp_nouveau_appearance[groups_create_tabs]',
+			'type'       => 'checkbox',
 		),
 		'group_nav_order' => array(
 			'class'       => 'BP_Nouveau_Nav_Customize_Control',
-			'label'      => __( 'Reorder the Groups single items primary navigation.', 'buddypress' ),
+			'label'      => __( 'Reorder the primary navigation for a group.', 'buddypress' ),
 			'section'    => 'bp_nouveau_group_primary_nav',
 			'settings'   => 'bp_nouveau_appearance[group_nav_order]',
 			'type'       => 'group',
 		),
 		'groups_layout' => array(
-			'label'      => __( 'Groups loop:', 'buddypress' ),
+			'label'      => _x( 'Groups', 'Customizer control label', 'buddypress' ),
 			'section'    => 'bp_nouveau_loops_layout',
 			'settings'   => 'bp_nouveau_appearance[groups_layout]',
 			'type'       => 'select',
 			'choices'    => bp_nouveau_customizer_grid_choices(),
+		),
+		'members_group_layout' => array(
+			'label'      => __( 'Group > Members', 'buddypress' ),
+			'section'    => 'bp_nouveau_loops_layout',
+			'settings'   => 'bp_nouveau_appearance[members_group_layout]',
+			'type'       => 'select',
+			'choices'    => bp_nouveau_customizer_grid_choices(),
+		),
+		'group_dir_layout' => array(
+			'label'      => __( 'Use column navigation for the Groups directory.', 'buddypress' ),
+			'section'    => 'bp_nouveau_dir_layout',
+			'settings'   => 'bp_nouveau_appearance[groups_dir_layout]',
+			'type'       => 'checkbox',
+		),
+		'group_dir_tabs' => array(
+			'label'      => __( 'Use tab styling for Groups directory navigation.', 'buddypress' ),
+			'section'    => 'bp_nouveau_dir_layout',
+			'settings'   => 'bp_nouveau_appearance[groups_dir_tabs]',
+			'type'       => 'checkbox',
 		),
 	) );
 }
@@ -842,6 +896,13 @@ function bp_nouveau_group_reset_front_template( $templates = array(), $group = n
 		array_push( $templates, 'groups/single/default-front.php' );
 	}
 
+	/**
+	 * Filters the BuddyPress Nouveau template hierarchy after resetting front template for groups.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param array $templates Array of templates.
+	 */
 	return apply_filters( '_bp_nouveau_group_reset_front_template', $templates );
 }
 
@@ -892,9 +953,16 @@ function bp_nouveau_group_locate_template_part( $template = '' ) {
 
 	// Loop in the hierarchy to fill it for the requested template part
 	foreach ( $bp_nouveau->groups->current_group_hierarchy as $part ) {
-		$templates[] = sprintf( $part, $template );
+		$templates[] = sprintf( $part, sanitize_file_name( $template ) );
 	}
 
+	/**
+	 * Filters the found template parts for the group template part locating functionality.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param array $templates Array of found templates.
+	 */
 	return bp_locate_template( apply_filters( 'bp_nouveau_group_locate_template_part', $templates ), false, true );
 }
 
@@ -915,7 +983,11 @@ function bp_nouveau_group_get_template_part( $template = '' ) {
 		$name = null;
 
 		/**
-		 * Let plugins adding an action to bp_get_template_part get it from here
+		 * Let plugins adding an action to bp_get_template_part get it from here.
+		 *
+		 * This is a variable hook that is dependent on the template part slug.
+		 *
+		 * @since 3.0.0
 		 *
 		 * @param string $slug Template part slug requested.
 		 * @param string $name Template part name requested.
@@ -936,7 +1008,7 @@ function bp_nouveau_group_get_template_part( $template = '' ) {
  * @return bool True if in the group's home sidebar. False otherwise.
  */
 function bp_nouveau_group_is_home_widgets() {
-	return true === bp_nouveau()->groups->is_group_home_sidebar;
+	return ( true === bp_nouveau()->groups->is_group_home_sidebar );
 }
 
 /**
@@ -1001,6 +1073,11 @@ function bp_nouveau_groups_add_home_widget_filters() {
 	add_filter( 'bp_before_has_groups_parse_args', 'bp_nouveau_group_groups_widget_overrides', 10, 1 );
 	add_filter( 'bp_before_has_members_parse_args', 'bp_nouveau_group_members_widget_overrides', 10, 1 );
 
+	/**
+	 * Fires after BuddyPress Nouveau groups have added their home widget filters.
+	 *
+	 * @since 3.0.0
+	 */
 	do_action( 'bp_nouveau_groups_add_home_widget_filters' );
 }
 
@@ -1014,6 +1091,11 @@ function bp_nouveau_groups_remove_home_widget_filters() {
 	remove_filter( 'bp_before_has_groups_parse_args', 'bp_nouveau_group_groups_widget_overrides', 10, 1 );
 	remove_filter( 'bp_before_has_members_parse_args', 'bp_nouveau_group_members_widget_overrides', 10, 1 );
 
+	/**
+	 * Fires after BuddyPress Nouveau groups have removed their home widget filters.
+	 *
+	 * @since 3.0.0
+	 */
 	do_action( 'bp_nouveau_groups_remove_home_widget_filters' );
 }
 
@@ -1030,11 +1112,28 @@ function bp_nouveau_groups_remove_home_widget_filters() {
 function bp_nouveau_group_get_core_create_screens( $id = '' ) {
 	// screen id => dynamic part of the hooks, nonce & specific template to use.
 	$screens = array(
-		'group-details'     => array( 'hook' => 'group_details_creation_step',     'nonce' => 'groups_create_save_group-details',     'template' => 'groups/single/admin/edit-details' ),
-		'group-settings'    => array( 'hook' => 'group_settings_creation_step',    'nonce' => 'groups_create_save_group-settings',                                                     ),
-		'group-avatar'      => array( 'hook' => 'group_avatar_creation_step',      'nonce' => 'groups_create_save_group-avatar',                                                       ),
-		'group-cover-image' => array( 'hook' => 'group_cover_image_creation_step', 'nonce' => 'groups_create_save_group-cover-image',                                                  ),
-		'group-invites'     => array( 'hook' => 'group_invites_creation_step',     'nonce' => 'groups_create_save_group-invites',     'template' => 'groups/create-invites'      ),
+		'group-details' => array(
+			'hook'     => 'group_details_creation_step',
+			'nonce'    => 'groups_create_save_group-details',
+			'template' => 'groups/single/admin/edit-details',
+		),
+		'group-settings' => array(
+			'hook'  => 'group_settings_creation_step',
+			'nonce' => 'groups_create_save_group-settings',
+		),
+		'group-avatar' => array(
+			'hook'  => 'group_avatar_creation_step',
+			'nonce' => 'groups_create_save_group-avatar',
+		),
+		'group-cover-image' => array(
+			'hook'  => 'group_cover_image_creation_step',
+			'nonce' => 'groups_create_save_group-cover-image',
+		),
+		'group-invites' => array(
+			'hook'     => 'group_invites_creation_step',
+			'nonce'    => 'groups_create_save_group-invites',
+			'template' => 'common/js-templates/invites/index',
+		),
 	);
 
 	if ( isset( $screens[ $id ] ) ) {
@@ -1097,17 +1196,17 @@ function bp_nouveau_groups_notification_filters() {
 		),
 		array(
 			'id'       => 'member_promoted_to_admin',
-			'label'    => __( 'Group Admin promotions', 'buddypress' ),
+			'label'    => __( 'Group Administrator promotions', 'buddypress' ),
 			'position' => 85,
 		),
 		array(
 			'id'       => 'member_promoted_to_mod',
-			'label'    => __( 'Group Mod promotions', 'buddypress' ),
+			'label'    => __( 'Group Moderator promotions', 'buddypress' ),
 			'position' => 95,
 		),
 		array(
 			'id'       => 'group_invite',
-			'label'    => __( 'Group invites', 'buddypress' ),
+			'label'    => __( 'Group invitations', 'buddypress' ),
 			'position' => 105,
 		),
 	);

@@ -3,16 +3,17 @@
  * BuddyPress - Members Single Profile WP
  *
  * @since 3.0.0
+ * @version 3.1.0
  */
 
 bp_nouveau_wp_profile_hooks( 'before' ); ?>
 
 <div class="bp-widget wp-profile">
 
-	<h2 class="screen-heading">
+	<h2 class="screen-heading wp-profile-screen">
 		<?php
 		if ( bp_is_my_profile() ) {
-			_e( 'My Profile', 'buddypress' );
+			esc_html_e( 'My Profile', 'buddypress' );
 		} else {
 			printf(
 				/* Translators: a member's profile, e.g. "Paul's profile". */

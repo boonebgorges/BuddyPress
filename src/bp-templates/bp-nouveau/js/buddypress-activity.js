@@ -1,5 +1,6 @@
 /* jshint browser: true */
 /* global bp, BP_Nouveau */
+/* @version 3.1.0 */
 window.bp = window.bp || {};
 
 ( function( exports, $ ) {
@@ -82,7 +83,7 @@ window.bp = window.bp || {};
 		 * @return {[type]}       [description]
 		 */
 		heartbeatSend: function( event, data ) {
-			this.heartbeat_data.first_recorded = $( '#buddypress [data-bp-list] [data-bp-activity-id] time' ).first().data( 'bp-timestamp' ) || 0;
+			this.heartbeat_data.first_recorded = $( '#buddypress [data-bp-list] [data-bp-activity-id]' ).first().data( 'bp-timestamp' ) || 0;
 
 			if ( 0 === this.heartbeat_data.last_recorded || this.heartbeat_data.first_recorded > this.heartbeat_data.last_recorded ) {
 				this.heartbeat_data.last_recorded = this.heartbeat_data.first_recorded;
@@ -95,13 +96,6 @@ window.bp = window.bp || {};
 			}
 
 			$.extend( data, { bp_heartbeat: bp.Nouveau.getStorage( 'bp-activity' ) } );
-
-			// Update all displayed time
-			$.each( $( '#buddypress time' ), function( t, time ) {
-				if ( $( time ).data( 'bp-timestamp' ) ) {
-					$( time ).html( bp.Nouveau.updateTimeSince( Number( $( time ).data( 'bp-timestamp' ) ) ) );
-				}
-			} );
 		},
 
 		/**
@@ -201,7 +195,7 @@ window.bp = window.bp || {};
 
 			// Otherwise add it
 			} else {
-				$( '#buddypress [data-bp-list="activity"]' ).prepend( '<li class="load-newest"><a href="#newest">' + BP_Nouveau.newest + ' (' + newest_activities_count + ')</a></li>' );
+				$( '#buddypress [data-bp-list="activity"] ul.activity-list' ).prepend( '<li class="load-newest"><a href="#newest">' + BP_Nouveau.newest + ' (' + newest_activities_count + ')</a></li>' );
 			}
 
 			/**
@@ -242,7 +236,7 @@ window.bp = window.bp || {};
 				} );
 
 				// Now the stream is cleaned, prepend newest
-				$( event.delegateTarget ).prepend( this.heartbeat_data.newest ).trigger( 'bp_heartbeat_prepend', this.heartbeat_data );
+				$( event.delegateTarget ).find( '.activity-list' ).prepend( this.heartbeat_data.newest ).trigger( 'bp_heartbeat_prepend', this.heartbeat_data );
 
 				// Reset the newest activities now they're displayed
 				this.heartbeat_data.newest = '';
@@ -303,7 +297,8 @@ window.bp = window.bp || {};
 					search_terms        : search_terms,
 					page                : next_page,
 					method              : 'append',
-					exclude_just_posted : this.just_posted.join( ',' )
+					exclude_just_posted : this.just_posted.join( ',' ),
+					target              : '#buddypress [data-bp-list] ul.bp-list'
 				} ).done( function( response ) {
 					if ( true === response.success ) {
 						$( event.currentTarget ).remove();
@@ -356,7 +351,7 @@ window.bp = window.bp || {};
 				} );
 
 				// If all parents are hidden, reveal at least one. It seems very risky to manipulate the DOM to keep exactly 5 comments!
-				if ( $( comment_parents ).children( '.bp-hidden' ).length === $( comment_parents ).children( 'li' ).length - 1 && $( comment_parents ).find( 'li.show-all' ) ) {
+				if ( $( comment_parents ).children( '.bp-hidden' ).length === $( comment_parents ).children( 'li' ).length - 1 && $( comment_parents ).find( 'li.show-all' ).length ) {
 					$( comment_parents ).children( 'li' ).removeClass( 'bp-hidden' ).toggle();
 				}
 			} );
@@ -390,6 +385,9 @@ window.bp = window.bp || {};
 			// Make sure to only keep 5 root comments
 			this.hideComments( event );
 
+			// Reset the pagination for the scope.
+			this.current_page = 1;
+
 			// Mentions are specific
 			if ( 'mentions' === data.scope && undefined !== data.response.new_mentions ) {
 				$.each( data.response.new_mentions, function( i, id ) {
@@ -408,7 +406,11 @@ window.bp = window.bp || {};
 
 			// Reset the newest activities now they're displayed
 			this.heartbeat_data.newest = '';
-			$( bp.Nouveau.objectNavParent + ' [data-bp-scope="all"]' ).find( 'a span' ).html( '' );
+			$.each( $( bp.Nouveau.objectNavParent + ' [data-bp-scope]' ).find( 'a span' ), function( s, count ) {
+				if ( 0 === parseInt( $( count ).html(), 10 ) ) {
+					$( count ).html( '' );
+				}
+			} );
 
 			// Activities are now loaded, clear the highlighted activities for the scope
 			if ( undefined !== this.heartbeat_data.highlights[ data.scope ] ) {
@@ -594,7 +596,7 @@ window.bp = window.bp || {};
 						} );
 
 						// reset vars to get newest activities when an activity is deleted
-						if ( ! activity_comment_id && activity_item.find( 'time' ).first().data( 'bp-timestamp' ) === parent.Activity.heartbeat_data.last_recorded ) {
+						if ( ! activity_comment_id && activity_item.data( 'bp-timestamp' ) === parent.Activity.heartbeat_data.last_recorded ) {
 							parent.Activity.heartbeat_data.newest        = '';
 							parent.Activity.heartbeat_data.last_recorded  = 0;
 						}

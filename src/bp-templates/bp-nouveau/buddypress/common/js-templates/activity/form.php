@@ -2,11 +2,12 @@
 /**
  * Activity Post form JS Templates
  *
+ * @version 3.1.0
  */
 ?>
 
 <script type="text/html" id="tmpl-activity-post-form-feedback">
-	<p>{{{data.message}}}</p>
+	<span class="bp-icon" aria-hidden="true"></span><p>{{{data.message}}}</p>
 </script>
 
 <script type="text/html" id="tmpl-activity-post-form-avatar">
@@ -38,7 +39,7 @@
 
 	<# if ( data.selected ) { #>
 		<button type="button" class="bp-remove-item dashicons dashicons-no" data-item_id="{{data.id}}">
-			<span class="bp-screen-reader-text"><?php esc_html_e( 'Remove item', 'buddypress' ); ?></span>
+			<span class="bp-screen-reader-text"><?php echo esc_html_x( 'Remove item', 'button', 'buddypress' ); ?></span>
 		</button>
 	<# } #>
 </script>

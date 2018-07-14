@@ -74,6 +74,9 @@ add_filter( 'bp_activity_at_name_do_notifications', 'bp_groups_disable_at_mentio
 add_filter( 'bp_core_avatar_default',       'bp_groups_default_avatar', 10, 3 );
 add_filter( 'bp_core_avatar_default_thumb', 'bp_groups_default_avatar', 10, 3 );
 
+// Personal data export.
+add_filter( 'wp_privacy_personal_data_exporters', 'bp_groups_register_personal_data_exporters' );
+
 /**
  * Filter output of Group Description through WordPress's KSES API.
  *
@@ -216,11 +219,17 @@ function bp_groups_user_can_filter( $retval, $user_id, $capability, $site_id, $a
 				break;
 			}
 
+			// Set to false to begin with.
+			$retval = false;
+
 			// The group must allow joining, and the user should not currently be a member.
 			$group = groups_get_group( $group_id );
-			if ( 'public' === bp_get_group_status( $group )
+			if ( ( 'public' === bp_get_group_status( $group )
 				&& ! groups_is_user_member( $user_id, $group->id )
-				&& ! groups_is_user_banned( $user_id, $group->id )
+				&& ! groups_is_user_banned( $user_id, $group->id ) )
+				// Site admins can join any group they are not a member of.
+				|| ( bp_user_can( $user_id, 'bp_moderate' )
+				&& ! groups_is_user_member( $user_id, $group->id ) )
 			) {
 				$retval = true;
 			}
@@ -231,6 +240,9 @@ function bp_groups_user_can_filter( $retval, $user_id, $capability, $site_id, $a
 			if ( ! $user_id || ! $group_id ) {
 				break;
 			}
+
+			// Set to false to begin with.
+			$retval = false;
 
 			/*
 			* The group must accept membership requests, and the user should not
@@ -256,7 +268,6 @@ function bp_groups_user_can_filter( $retval, $user_id, $capability, $site_id, $a
 			* The group must allow invitations, and the user should not
 			* currently be a member or be banned from the group.
 			*/
-			$group = groups_get_group( $group_id );
 			// Users with the 'bp_moderate' cap can always send invitations.
 			if ( bp_user_can( $user_id, 'bp_moderate' ) ) {
 				$retval = true;
@@ -290,6 +301,9 @@ function bp_groups_user_can_filter( $retval, $user_id, $capability, $site_id, $a
 			if ( ! $user_id || ! $group_id ) {
 				break;
 			}
+
+			// Set to false to begin with.
+			$retval = false;
 
 			/*
 			* The group must allow invitations, and the user should not
@@ -351,3 +365,35 @@ function bp_groups_user_can_filter( $retval, $user_id, $capability, $site_id, $a
 
 }
 add_filter( 'bp_user_can', 'bp_groups_user_can_filter', 10, 5 );
+
+/**
+ * Registers Groups personal data exporters.
+ *
+ * @since 4.0.0
+ *
+ * @param array $exporters  An array of personal data exporters.
+ * @return array An array of personal data exporters.
+ */
+function bp_groups_register_personal_data_exporters( $exporters ) {
+	$exporters['buddypress-groups-memberships'] = array(
+		'exporter_friendly_name' => __( 'BuddyPress Group Memberships', 'buddypress' ),
+		'callback'               => 'bp_groups_memberships_personal_data_exporter',
+	);
+
+	$exporters['buddypress-groups-pending-requests'] = array(
+		'exporter_friendly_name' => __( 'BuddyPress Pending Group Membership Requests', 'buddypress' ),
+		'callback'               => 'bp_groups_pending_requests_personal_data_exporter',
+	);
+
+	$exporters['buddypress-groups-pending-received-invitations'] = array(
+		'exporter_friendly_name' => __( 'BuddyPress Pending Group Invitations (Received)', 'buddypress' ),
+		'callback'               => 'bp_groups_pending_received_invitations_personal_data_exporter',
+	);
+
+	$exporters['buddypress-groups-pending-sent-invitations'] = array(
+		'exporter_friendly_name' => __( 'BuddyPress Pending Group Invitations (Sent)', 'buddypress' ),
+		'callback'               => 'bp_groups_pending_sent_invitations_personal_data_exporter',
+	);
+
+	return $exporters;
+}

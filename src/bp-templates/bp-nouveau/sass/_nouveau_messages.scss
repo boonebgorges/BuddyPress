@@ -1,19 +1,14 @@
 // Nouveau Messages styles.
-
+// @version 3.0.0
 // Icon additions to default action star
 
 
 .message-action-star:before,
 .message-action-unstar:before,
-.bp-navs ul li#compose-personal-li a#compose:before,
 .message-action-view:before,
 .message-action-delete:before {
 	font-family: dashicons;
 	font-size: 18px;
-}
-
-.bp-navs ul li#compose-personal-li a#compose:before {
-	font-size: 22px;
 }
 
 .message-action-star:before {
@@ -47,30 +42,6 @@
 		}
 	}
 }
-
-// Compose Icon
-li#compose-personal-li {
-
-	&.last {
-		margin-top: 0;
-	}
-
-	a#compose {
-		display: inline-block;
-		padding: 1px 6px;
-	}
-
-	a#compose:before {
-		content: "\f464";
-	}
-
-	a#compose:focus,
-	a#compose:hover {
-		background: #eee;
-		color: #e8861e;
-	}
-
-} // close li#compose-personal-li
 
 // Visual message threads & preview pane styles
 
@@ -123,16 +94,10 @@ li#compose-personal-li {
 
 			@include center-vert();
 			@include box-item-size(1, 2, 5%);
-
-			label {
-				float: left;
-				margin-left: $marg-xsml;
-				text-align: center;
-				width: 5%;
-			}
 		}
 
-		.thread-from {
+		.thread-from,
+		.thread-to {
 
 			@include box-item-size(1, 2, 20%);
 
@@ -144,6 +109,14 @@ li#compose-personal-li {
 			.user-name {
 				display: inline-block;
 				line-height: 1.1;
+			}
+
+			.num-recipients {
+				color: $meta-text;
+				font-weight: 400;
+
+				@include font-size(12);
+				margin: 0;
 			}
 		}
 
@@ -169,8 +142,12 @@ li#compose-personal-li {
 			}
 		}
 
+		// the unread parent li
+		&.unread {
+			font-weight: 700;
+		}
+
 		.thread-content {
-			cursor: pointer;
 
 			.excerpt {
 				color: $meta-text;
@@ -180,6 +157,7 @@ li#compose-personal-li {
 			}
 
 			.thread-from,
+			.thread-to,
 			.thread-subject {
 
 				@include responsive-font(16);
@@ -210,7 +188,7 @@ li#compose-personal-li {
 		float: right;
 		max-width: 30%;
 
-		.bp-icons {
+		.bp-icons:not(.bp-hide) {
 			display: inline-block;
 			margin: 0;
 			padding: $pad-xsml $pad-sml;
@@ -228,7 +206,7 @@ li#compose-personal-li {
 		margin-top: $marg-lrg;
 
 		.preview-message {
-			clear: both;
+			overflow: hidden;
 		}
 
 		.preview-content {
@@ -266,8 +244,9 @@ li#compose-personal-li {
 			border-bottom: 1px solid $bp-border-dark;
 
 			@include box-shadow(-2px 1px 9px 0 #eee);
-			overflow: hidden;
+			display: table;
 			padding: 0.2em;
+			width: 100%;
 
 			.avatar {
 				width: 30px;
@@ -298,7 +277,7 @@ li#compose-personal-li {
 		}
 
 		.message-content {
-			clear: both;
+			overflow: hidden;
 			margin: 1em auto 0;
 			width: 90%;
 		}
@@ -394,10 +373,11 @@ li#compose-personal-li {
 		display: none;
 	}
 
-	#thread-preview h4:first-child,
-	#bp-message-thread-header h4:first-child {
+	#thread-preview h2:first-child,
+	#bp-message-thread-header h2:first-child {
 		background-color: $light-grey;
 		color: $bp-text;
+		font-weight: 700;
 		margin: 0;
 		padding: 0.5em;
 	}

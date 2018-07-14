@@ -3,6 +3,8 @@
 This is the BuddyPress companion stylesheet for
 the WordPress Twentyfifteen theme.
 
+@version 3.0.0
+
 This sheet supports the primary BuddyPress styles in buddypress.css
 
 If you are running as a child theme of twentyfifteen this stylesheet will be
@@ -1023,9 +1025,7 @@ http://codex.buddypress.org/themes/buddypress-companion-stylesheets/
 
 .groups.edit-details #group-settings-form label {
 	background: #555;
-	-webkit-border-top-right-radius: 4px;
 	border-top-right-radius: 4px;
-	-webkit-border-top-left-radius: 4px;
 	border-top-left-radius: 4px;
 	background-clip: padding-box;
 	color: #fff;
@@ -1507,8 +1507,6 @@ http://codex.buddypress.org/themes/buddypress-companion-stylesheets/
 .bp-user #buddypress #message-threads tr td.thread-from,
 .bp-user #buddypress #message-threads tr td.thread-options {
 	border-left: 0 !important;
-	width: -webkit-calc(100% - 30px);
-	width: -moz-calc(100% - 30px);
 	width: calc(100% - 30px);
 	margin-left: 0;
 }

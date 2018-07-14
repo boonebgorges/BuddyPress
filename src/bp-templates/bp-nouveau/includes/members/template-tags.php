@@ -3,6 +3,7 @@
  * Members template tags
  *
  * @since 3.0.0
+ * @version 3.1.0
  */
 
 // Exit if accessed directly.
@@ -18,28 +19,28 @@ function bp_nouveau_before_members_directory_content() {
 	/**
 	 * Fires at the begining of the templates BP injected content.
 	 *
-	 * @since 2.3.0 (BuddyPress)
+	 * @since 2.3.0
 	 */
 	do_action( 'bp_before_directory_members_page' );
 
 	/**
 	 * Fires before the display of the members.
 	 *
-	 * @since 1.1.0 (BuddyPress)
+	 * @since 1.1.0
 	 */
 	do_action( 'bp_before_directory_members' );
 
 	/**
 	 * Fires before the display of the members content.
 	 *
-	 * @since 1.1.0 (BuddyPress)
+	 * @since 1.1.0
 	 */
 	do_action( 'bp_before_directory_members_content' );
 
 	/**
 	 * Fires before the display of the members list tabs.
 	 *
-	 * @since 1.8.0 (BuddyPress)
+	 * @since 1.8.0
 	 */
 	do_action( 'bp_before_directory_members_tabs' );
 }
@@ -54,28 +55,28 @@ function bp_nouveau_after_members_directory_content() {
 	/**
 	 * Fires and displays the members content.
 	 *
-	 * @since 1.1.0 (BuddyPress)
+	 * @since 1.1.0
 	 */
 	do_action( 'bp_directory_members_content' );
 
 	/**
 	 * Fires after the display of the members content.
 	 *
-	 * @since 1.1.0 (BuddyPress)
+	 * @since 1.1.0
 	 */
 	do_action( 'bp_after_directory_members_content' );
 
 	/**
 	 * Fires after the display of the members.
 	 *
-	 * @since 1.1.0 (BuddyPress)
+	 * @since 1.1.0
 	 */
 	do_action( 'bp_after_directory_members' );
 
 	/**
 	 * Fires at the bottom of the members directory template file.
 	 *
-	 * @since 1.5.0 (BuddyPress)
+	 * @since 1.5.0
 	 */
 	do_action( 'bp_after_directory_members_page' );
 }
@@ -149,7 +150,7 @@ function bp_nouveau_member_header_buttons( $args = array() ) {
 	/**
 	 * Fires in the member header actions section.
 	 *
-	 * @since 1.2.6 (BuddyPress)
+	 * @since 1.2.6
 	 */
 	do_action( 'bp_member_header_actions' );
 	$output .= ob_get_clean();
@@ -199,7 +200,7 @@ function bp_nouveau_members_loop_buttons( $args = array() ) {
 	/**
 	 * Fires inside the members action HTML markup to display actions.
 	 *
-	 * @since 1.1.0 (BuddyPress)
+	 * @since 1.1.0
 	 */
 	do_action( $action );
 	$output .= ob_get_clean();
@@ -285,16 +286,15 @@ function bp_nouveau_members_loop_buttons( $args = array() ) {
 						'component'         => 'friends',
 						'must_be_logged_in' => true,
 						'parent_element'    => $parent_element,
-						'link_text'         => __( 'Accept', 'buddypress' ),
+						'link_text'         => _x( 'Accept', 'button', 'buddypress' ),
 						'parent_attr'       => array(
 							'id'    => '',
 							'class' => $parent_class ,
 						),
 						'button_element'    => $button_element,
 						'button_attr'       => array(
-							'class'           => 'button accept bp-tooltip',
+							'class'           => 'button accept',
 							'rel'             => '',
-							'data-bp-tooltip' => __( 'Accept', 'buddypress' ),
 						),
 					), 'reject_friendship' => array(
 						'id'                => 'reject_friendship',
@@ -302,16 +302,15 @@ function bp_nouveau_members_loop_buttons( $args = array() ) {
 						'component'         => 'friends',
 						'must_be_logged_in' => true,
 						'parent_element'    => $parent_element,
-						'link_text'         => __( 'Reject', 'buddypress' ),
+						'link_text'         => _x( 'Reject', 'button', 'buddypress' ),
 						'parent_attr'       => array(
 							'id'    => '',
 							'class' => $parent_class,
 						),
 						'button_element'    => $button_element,
 						'button_attr'       => array (
-							'class'           => 'button reject bp-tooltip',
+							'class'           => 'button reject',
 							'rel'             => '',
-							'data-bp-tooltip' => __( 'Reject', 'buddypress' ),
 						),
 					),
 				);
@@ -365,9 +364,10 @@ function bp_nouveau_members_loop_buttons( $args = array() ) {
 					);
 
 					// If button element set add nonce link to data attr
-					if ( 'button' === $button_element ) {
+					if ( 'button' === $button_element && 'awaiting_response' !== $button_args['id'] ) {
 						$buttons['member_friendship']['button_attr']['data-bp-nonce'] = $button_args['link_href'];
 					} else {
+						$buttons['member_friendship']['button_element'] = 'a';
 						$buttons['member_friendship']['button_attr']['href'] = $button_args['link_href'];
 					}
 
@@ -604,7 +604,7 @@ function bp_nouveau_member_template_part() {
 	/**
 	 * Fires before the display of member body content.
 	 *
-	 * @since 1.2.0 (BuddyPress)
+	 * @since 1.2.0
 	 */
 	do_action( 'bp_before_member_body' );
 
@@ -638,7 +638,7 @@ function bp_nouveau_member_template_part() {
 	/**
 	 * Fires after the display of member body content.
 	 *
-	 * @since 1.2.0 (BuddyPress)
+	 * @since 1.2.0
 	 */
 	do_action( 'bp_after_member_body' );
 }
@@ -660,7 +660,7 @@ function bp_nouveau_member_header_template_part() {
 	/**
 	 * Fires before the display of a member's header.
 	 *
-	 * @since 1.2.0 (BuddyPress)
+	 * @since 1.2.0
 	 */
 	do_action( 'bp_before_member_header' );
 
@@ -670,7 +670,7 @@ function bp_nouveau_member_header_template_part() {
 	/**
 	 * Fires after the display of a member's header.
 	 *
-	 * @since 1.2.0 (BuddyPress)
+	 * @since 1.2.0
 	 */
 	do_action( 'bp_after_member_header' );
 
@@ -927,6 +927,14 @@ function bp_nouveau_wp_profile_field_id() {
 	 */
 	function bp_nouveau_get_wp_profile_field_id() {
 		$field = bp_nouveau()->members->wp_profile_current;
+
+		/**
+		 * Filters the WP profile field ID used for BuddyPress Nouveau.
+		 *
+		 * @since 3.0.0
+		 *
+		 * @param string $id Field ID.
+		 */
 		return apply_filters( 'bp_nouveau_get_wp_profile_field_id', $field->id );
 	}
 
@@ -948,6 +956,14 @@ function bp_nouveau_wp_profile_field_label() {
 	 */
 	function bp_nouveau_get_wp_profile_field_label() {
 		$field = bp_nouveau()->members->wp_profile_current;
+
+		/**
+		 * Filters the WP profile field label used for BuddyPress Nouveau.
+		 *
+		 * @since 3.0.0
+		 *
+		 * @param string $label Field label.
+		 */
 		return apply_filters( 'bp_nouveau_get_wp_profile_field_label', $field->label );
 	}
 
@@ -960,11 +976,13 @@ function bp_nouveau_wp_profile_field_data() {
 	$data = bp_nouveau_get_wp_profile_field_data();
 	$data = make_clickable( $data );
 
-	return wp_kses(
+	echo wp_kses(
 		/**
 		 * Filters a WP profile field value.
 		 *
-		 * @param string $data The profile field value.
+		 * @since 3.0.0
+		 *
+		 * @param string $data The profile field data value.
 		 */
 		apply_filters( 'bp_nouveau_get_wp_profile_field_data', $data ),
 		array(

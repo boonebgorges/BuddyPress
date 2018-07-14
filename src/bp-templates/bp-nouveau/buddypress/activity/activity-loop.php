@@ -1,13 +1,17 @@
 <?php
 /**
  * BuddyPress - Activity Loop
+ *
+ * @version 3.1.0
  */
 
 bp_nouveau_before_loop(); ?>
 
 <?php if ( bp_has_activities( bp_ajax_querystring( 'activity' ) ) ) : ?>
 
-	<ul class="activity-list item-list bp-list" >
+	<?php if ( empty( $_POST['page'] ) || 1 === (int) $_POST['page'] ) : ?>
+		<ul class="activity-list item-list bp-list">
+	<?php endif; ?>
 
 	<?php
 	while ( bp_activities() ) :
@@ -21,12 +25,14 @@ bp_nouveau_before_loop(); ?>
 	<?php if ( bp_activity_has_more_items() ) : ?>
 
 		<li class="load-more">
-			<a href="<?php bp_activity_load_more_link(); ?>"><?php _e( 'Load More', 'buddypress' ); ?></a>
+			<a href="<?php bp_activity_load_more_link(); ?>"><?php echo esc_html_x( 'Load More', 'button', 'buddypress' ); ?></a>
 		</li>
 
 	<?php endif; ?>
 
-	</ul>
+	<?php if ( empty( $_POST['page'] ) || 1 === (int) $_POST['page'] ) : ?>
+		</ul>
+	<?php endif; ?>
 
 <?php else : ?>
 

@@ -192,15 +192,11 @@ function bp_get_options_avatar() {
 function bp_comment_author_avatar() {
 	global $comment;
 
-	if ( function_exists( 'bp_core_fetch_avatar' ) ) {
-		echo apply_filters( 'bp_comment_author_avatar', bp_core_fetch_avatar( array(
-			'item_id' => $comment->user_id,
-			'type'    => 'thumb',
-			'alt'     => sprintf( __( 'Profile photo of %s', 'buddypress' ), bp_core_get_user_displayname( $comment->user_id ) )
-		) ) );
-	} elseif ( function_exists( 'get_avatar' ) ) {
-		get_avatar();
-	}
+	echo apply_filters( 'bp_comment_author_avatar', bp_core_fetch_avatar( array(
+		'item_id' => $comment->user_id,
+		'type'    => 'thumb',
+		'alt'     => sprintf( __( 'Profile photo of %s', 'buddypress' ), bp_core_get_user_displayname( $comment->user_id ) )
+	) ) );
 }
 
 /**
@@ -211,15 +207,11 @@ function bp_comment_author_avatar() {
 function bp_post_author_avatar() {
 	global $post;
 
-	if ( function_exists( 'bp_core_fetch_avatar' ) ) {
-		echo apply_filters( 'bp_post_author_avatar', bp_core_fetch_avatar( array(
-			'item_id' => $post->post_author,
-			'type'    => 'thumb',
-			'alt'     => sprintf( __( 'Profile photo of %s', 'buddypress' ), bp_core_get_user_displayname( $post->post_author ) )
-		) ) );
-	} elseif ( function_exists( 'get_avatar' ) ) {
-		get_avatar();
-	}
+	echo apply_filters( 'bp_post_author_avatar', bp_core_fetch_avatar( array(
+		'item_id' => $post->post_author,
+		'type'    => 'thumb',
+		'alt'     => sprintf( __( 'Profile photo of %s', 'buddypress' ), bp_core_get_user_displayname( $post->post_author ) )
+	) ) );
 }
 
 /**
@@ -2705,19 +2697,6 @@ function bp_is_group_create() {
  */
 function bp_is_group_admin_page() {
 	return (bool) ( bp_is_single_item() && bp_is_groups_component() && bp_is_current_action( 'admin' ) );
-}
-
-/**
- * Is the current page a group's (legacy bbPress) forum page?
- *
- * @since 1.1.0
- * @since 3.0.0 Always returns false.
- * @deprecated 3.0.0 No longer used in core, but supported for custom theme templates.
- *
- * @return bool
- */
-function bp_is_group_forum() {
-	return false;
 }
 
 /**

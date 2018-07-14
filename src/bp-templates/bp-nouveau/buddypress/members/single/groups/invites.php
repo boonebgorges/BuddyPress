@@ -3,9 +3,13 @@
  * BuddyPress - Members Single Group Invites
  *
  * @since 3.0.0
+ * @version 3.1.0
  */
+?>
 
-bp_nouveau_group_hook( 'before', 'invites_content' ); ?>
+<h2 class="screen-heading group-invites-screen"><?php esc_html_e( 'Group Invites', 'buddypress' ); ?></h2>
+
+<?php bp_nouveau_group_hook( 'before', 'invites_content' ); ?>
 
 <?php if ( bp_has_groups( 'type=invites&user_id=' . bp_loggedin_user_id() ) ) : ?>
 
@@ -29,7 +33,20 @@ bp_nouveau_group_hook( 'before', 'invites_content' ); ?>
 					<div class="item">
 						<h2 class="list-title groups-title"><?php bp_group_link(); ?></h2>
 						<p class="meta group-details">
-							<span class="small"> - <?php printf( _nx( '%d member', '%d members', bp_get_group_total_members( false ), 'Group member count', 'buddypress' ), bp_get_group_total_members( false ) ); ?></span>
+							<span class="small">
+							<?php
+							printf(
+								/* translators: %s = number of members */
+								_n(
+									'%s member',
+									'%s members',
+									bp_get_group_total_members( false ),
+									'buddypress'
+								),
+								number_format_i18n( bp_get_group_total_members( false ) )
+							);
+							?>
+							</span>
 						</p>
 
 						<p class="desc">

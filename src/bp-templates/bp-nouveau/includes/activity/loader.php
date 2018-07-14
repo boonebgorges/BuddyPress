@@ -3,6 +3,7 @@
  * BP Nouveau Activity
  *
  * @since 3.0.0
+ * @version 3.0.0
  */
 
 // Exit if accessed directly.
@@ -87,6 +88,8 @@ class BP_Nouveau_Activity {
 	 * @since 3.0.0
 	 */
 	protected function setup_filters() {
+		// Register customizer controls.
+		add_filter( 'bp_nouveau_customizer_controls', 'bp_nouveau_activity_customizer_controls', 10, 1 );
 
 		// Register activity scripts
 		add_filter( 'bp_nouveau_register_scripts', 'bp_nouveau_activity_register_scripts', 10, 1 );
@@ -96,8 +99,6 @@ class BP_Nouveau_Activity {
 
 		add_filter( 'bp_get_activity_action_pre_meta', 'bp_nouveau_activity_secondary_avatars', 10, 2 );
 		add_filter( 'bp_get_activity_css_class', 'bp_nouveau_activity_scope_newest_class', 10, 1 );
-		add_filter( 'bp_activity_time_since', 'bp_nouveau_activity_time_since', 10, 2 );
-		add_filter( 'bp_activity_allowed_tags', 'bp_nouveau_activity_allowed_tags', 10, 1 );
 	}
 }
 

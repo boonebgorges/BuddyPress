@@ -3,6 +3,7 @@
  * Blogs functions
  *
  * @since 3.0.0
+ * @version 3.1.0
  */
 
 // Exit if accessed directly.
@@ -164,11 +165,23 @@ function bp_nouveau_blogs_customizer_settings( $settings = array() ) {
 function bp_nouveau_blogs_customizer_controls( $controls = array() ) {
 	return array_merge( $controls, array(
 		'blogs_layout' => array(
-			'label'      => __( 'Blogs loop:', 'buddypress' ),
+			'label'      => __( 'Sites loop:', 'buddypress' ),
 			'section'    => 'bp_nouveau_loops_layout',
 			'settings'   => 'bp_nouveau_appearance[blogs_layout]',
 			'type'       => 'select',
 			'choices'    => bp_nouveau_customizer_grid_choices(),
+		),
+		'sites_dir_layout' => array(
+			'label'      => __( 'Use column navigation for the Sites directory.', 'buddypress' ),
+			'section'    => 'bp_nouveau_dir_layout',
+			'settings'   => 'bp_nouveau_appearance[sites_dir_layout]',
+			'type'       => 'checkbox',
+		),
+		'sites_dir_tabs' => array(
+			'label'      => __( 'Use tab styling for Sites directory navigation.', 'buddypress' ),
+			'section'    => 'bp_nouveau_dir_layout',
+			'settings'   => 'bp_nouveau_appearance[sites_dir_tabs]',
+			'type'       => 'checkbox',
 		),
 	) );
 }

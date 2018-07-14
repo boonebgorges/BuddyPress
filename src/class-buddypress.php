@@ -303,7 +303,7 @@ class BuddyPress {
 
 		/** Versions **********************************************************/
 
-		$this->version    = '3.0.0-alpha';
+		$this->version    = '4.0.0-alpha';
 		$this->db_version = 11105;
 
 		/** Loading ***********************************************************/
@@ -399,7 +399,23 @@ class BuddyPress {
 		$this->displayed_user = new stdClass();
 
 		/** Post types and taxonomies *****************************************/
+
+		/**
+		 * Filters the post type slug for the email component.
+		 *
+		 * since 2.5.0
+		 *
+		 * @param string $value Email post type slug.
+		 */
 		$this->email_post_type     = apply_filters( 'bp_email_post_type', 'bp-email' );
+
+		/**
+		 * Filters the taxonomy slug for the email type component.
+		 *
+		 * @since 2.5.0
+		 *
+		 * @param string $value Email type taxonomy slug.
+		 */
 		$this->email_taxonomy_type = apply_filters( 'bp_email_tax_type', 'bp-email-type' );
 	}
 
@@ -489,6 +505,11 @@ class BuddyPress {
 			require( $this->plugin_dir . 'bp-core/deprecated/2.7.php' );
 			require( $this->plugin_dir . 'bp-core/deprecated/2.8.php' );
 			require( $this->plugin_dir . 'bp-core/deprecated/2.9.php' );
+			require( $this->plugin_dir . 'bp-core/deprecated/3.0.php' );
+		}
+
+		if ( defined( 'WP_CLI' ) && file_exists( $this->plugin_dir . 'cli/wp-cli-bp.php' ) ) {
+			require( $this->plugin_dir . 'cli/wp-cli-bp.php' );
 		}
 	}
 

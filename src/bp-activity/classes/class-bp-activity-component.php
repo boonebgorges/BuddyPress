@@ -71,8 +71,8 @@ class BP_Activity_Component extends BP_Component {
 			$includes[] = 'akismet';
 		}
 
-		// Embeds - only applicable for WP 4.5+
-		if ( version_compare( $GLOBALS['wp_version'], '4.5', '>=' ) && bp_is_active( $this->id, 'embeds' ) ) {
+		// Embeds
+		if ( bp_is_active( $this->id, 'embeds' ) ) {
 			$includes[] = 'embeds';
 		}
 
@@ -136,11 +136,6 @@ class BP_Activity_Component extends BP_Component {
 
 			// Theme compatibility.
 			new BP_Activity_Theme_Compat();
-		}
-
-		// Activity notifications HTML table.
-		if ( bp_is_user_settings_notifications() ) {
-			require $this->path . 'bp-activity/screens/settings-email.php';
 		}
 	}
 

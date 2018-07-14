@@ -1,6 +1,7 @@
 /*
-* bp-nouveau styling: invite members, sent invites
-* */
+ * bp-nouveau styling: invite members, sent invites
+ * @version 3.0.0
+ */
 .buddypress {
 
 	.bp-invites-content {
@@ -17,8 +18,8 @@
 				width: auto;
 
 				.list-title {
-					text-align: center;
-					width: auto;
+					margin: 0 auto;
+					width: 80%;
 				}
 
 				.action {
@@ -77,8 +78,9 @@
 
 		} // close li
 
+		@include clearfix-element("#send-invites-editor ul");
+
 		#send-invites-editor {
-			overflow: hidden;
 
 			textarea {
 				width: 100%;
@@ -88,7 +90,6 @@
 				clear: both;
 				list-style: none;
 				margin: $marg-sml 0;
-				overflow: hidden;
 
 				li {
 					float: left;
@@ -97,6 +98,11 @@
 					max-width: 50px;
 				}
 			} // ul
+
+			#bp-send-invites-form {
+				clear: both;
+				margin-top: $marg-sml;
+			}
 
 			.action {
 				margin-top: $marg-sml;
@@ -141,5 +147,34 @@
 		} // close @media
 
 	} // close bp-invites-content
+}
+
+@include medium-up() {
+
+	:not(.vertical) + .item-body #group-invites-container {
+
+		display: -ms-grid;
+		display: grid;
+		-ms-grid-columns: 25% auto;
+		grid-template-columns: 25% auto;
+		grid-template-areas: "group-invites-nav group-invites-column";
+
+		.bp-invites-nav {
+			-ms-grid-row: 1;
+			-ms-grid-column: 1;
+			grid-area: group-invites-nav;
+
+			li {
+				display: block;
+				float: none;
+			}
+		}
+
+		.group-invites-column {
+			-ms-grid-row: 1;
+			-ms-grid-column: 2;
+			grid-area: group-invites-column;
+		}
+	}
 }
 

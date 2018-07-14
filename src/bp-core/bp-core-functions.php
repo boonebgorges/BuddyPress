@@ -3387,10 +3387,7 @@ function bp_email_get_schema() {
 			/* translators: do not remove {} brackets or translate its contents. */
 			'post_content' => __( "Thanks for registering!\n\nTo complete the activation of your account, go to the following link: <a href=\"{{{activate.url}}}\">{{{activate.url}}}</a>", 'buddypress' ),
 			/* translators: do not remove {} brackets or translate its contents. */
-			'post_excerpt' => __( "Thanks for registering!\n\nTo complete the activation of your account, go to the following link: {{{activate.url}}}", 'buddypress' ),
-			'args'         => array(
-				'multisite' => true,
-			),
+			'post_excerpt' => __( "Thanks for registering!\n\nTo complete the activation of your account, go to the following link: {{{activate.url}}}", 'buddypress' )
 		),
 		'core-user-registration-with-blog' => array(
 			/* translators: do not remove {} brackets or translate its contents. */
@@ -3802,4 +3799,53 @@ function bp_email_get_unsubscribe_type_schema() {
 	 * @param array $emails The array of email types and their schema.
 	 */
 	return (array) apply_filters( 'bp_email_get_unsubscribe_type_schema', $emails );
+}
+
+/**
+ * Get BuddyPress content allowed tags.
+ *
+ * @since  3.0.0
+ *
+ * @global array $allowedtags KSES allowed HTML elements.
+ * @return array              BuddyPress content allowed tags.
+ */
+function bp_get_allowedtags() {
+	global $allowedtags;
+
+	return array_merge_recursive( $allowedtags, array(
+		'a' => array(
+			'aria-label'      => array(),
+			'class'           => array(),
+			'data-bp-tooltip' => array(),
+			'id'              => array(),
+			'rel'             => array(),
+		),
+		'img' => array(
+			'src'    => array(),
+			'alt'    => array(),
+			'width'  => array(),
+			'height' => array(),
+			'class'  => array(),
+			'id'     => array(),
+		),
+		'span'=> array(
+			'class'          => array(),
+			'data-livestamp' => array(),
+		),
+		'ul' => array(),
+		'ol' => array(),
+		'li' => array(),
+	) );
+}
+
+/**
+ * Remove script and style tags from a string.
+ *
+ * @since 3.0.1
+ *
+ * @param  string $string The string to strip tags from.
+ * @return string         The stripped tags string.
+ */
+function bp_strip_script_and_style_tags( $string ) {
+	return preg_replace( '@<(script|style)[^>]*?>.*?</\\1>@si', '', $string );
 }

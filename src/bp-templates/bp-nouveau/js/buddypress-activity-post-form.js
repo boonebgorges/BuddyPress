@@ -1,5 +1,5 @@
 /* global bp, BP_Nouveau, _, Backbone */
-
+/* @version 3.1.0 */
 window.wp = window.wp || {};
 window.bp = window.bp || {};
 
@@ -31,6 +31,11 @@ window.bp = window.bp || {};
 		},
 
 		postFormView: function() {
+			// Do not carry on if the main element is not available.
+			if ( ! $( '#bp-nouveau-activity-form' ).length ) {
+				return;
+			}
+
 			// Create the BuddyPress Uploader
 			var postForm = new bp.Views.PostForm();
 
@@ -133,7 +138,7 @@ window.bp = window.bp || {};
 				this.type = this.options.type;
 			}
 
-			this.el.className = this.type;
+			this.el.className = 'bp-messages bp-feedback ' + this.type ;
 		}
 	} );
 
@@ -530,7 +535,7 @@ window.bp = window.bp || {};
 				type  : 'reset',
 				id    : 'aw-whats-new-reset',
 				className : 'text-button small',
-				value : 'Cancel'
+				value : BP_Nouveau.activity.strings.cancelButton
 			} );
 
 			var submit = new bp.Views.ActivityInput( {
@@ -538,7 +543,7 @@ window.bp = window.bp || {};
 				id    : 'aw-whats-new-submit',
 				className : 'button',
 				name  : 'aw-whats-new-submit',
-				value : 'Post Update'
+				value : BP_Nouveau.activity.strings.postUpdateButton
 			} );
 
 			this.views.set( [ submit, reset ] );
@@ -703,32 +708,52 @@ window.bp = window.bp || {};
 			}
 
 			bp.ajax.post( 'post_update', _.extend( data, this.model.attributes ) ).done( function( response ) {
-				var scope     = bp.Nouveau.getStorage( 'bp-activity', 'scope' ),
-					prepended = false;
+				var store       = bp.Nouveau.getStorage( 'bp-activity' ),
+					searchTerms = $( '[data-bp-search="activity"] input[type="search"]' ).val(), matches = {},
+					toPrepend = false;
 
-				if ( ! response.is_directory ||
-				     ( 'all' === scope && ( 'user' === self.model.get( 'object' ) || false === response.is_private ) ) ||
-				     ( self.model.get( 'object' ) + 's'  === scope )
-				    ) {
+				// Look for matches if the stream displays search results.
+				if ( searchTerms ) {
+					searchTerms = new RegExp( searchTerms, 'im' );
+					matches = response.activity.match( searchTerms );
+				}
 
-					if ( ! $( '#activity-' + response.id  ).length ) {
-						bp.Nouveau.inject( '#activity-stream ul.activity-list', response.activity, 'prepend' );
-						prepended = true;
-					}
+				/**
+				 * Before injecting the activity into the stream, we need to check the filter
+				 * and search terms are consistent with it when posting from a single item or
+				 * from the Activity directory.
+				 */
+				if ( ( ! searchTerms || matches ) ) {
+					toPrepend = ! store.filter || 0 === parseInt( store.filter, 10 ) || 'activity_update' === store.filter;
+				}
+
+				/**
+				 * In the Activity directory, we also need to check the active scope.
+				 * eg: An update posted in a private group should only show when the
+				 * "My Groups" tab is active.
+				 */
+				if ( toPrepend && response.is_directory ) {
+					toPrepend = ( 'all' === store.scope && ( 'user' === self.model.get( 'object' ) || false === response.is_private ) ) || ( self.model.get( 'object' ) + 's'  === store.scope );
 				}
 
 				// Reset the form
 				self.resetForm();
 
-				// Stop here if the activity has been added to the stream
-				if ( prepended ) {
-					return;
-				}
+				// Display a successful feedback if the acticity is not consistent with the displayed stream.
+				if ( ! toPrepend ) {
+					self.views.add( new bp.Views.activityFeedback( { value: response.message, type: 'updated' } ) );
 
-				/**
-				 * Do not add to the stream if the scope is not consistent with the activity
-				 */
-				self.views.add( new bp.Views.activityFeedback( { value: response.message, type: 'updated' } ) );
+				// Inject the activity into the stream only if it hasn't been done already (HeartBeat).
+				} else if ( ! $( '#activity-' + response.id  ).length ) {
+
+					// It's the very first activity, let's make sure the container can welcome it!
+					if ( ! $( '#activity-stream ul.activity-list').length ) {
+						$( '#activity-stream' ).html( $( '<ul></ul>').addClass( 'activity-list item-list bp-list' ) );
+					}
+
+					// Prepend the activity.
+					bp.Nouveau.inject( '#activity-stream ul.activity-list', response.activity, 'prepend' );
+				}
 			} ).fail( function( response ) {
 
 				self.model.set( 'errors', { type: 'error', value: response.message } );

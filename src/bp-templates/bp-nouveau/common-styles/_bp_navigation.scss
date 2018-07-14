@@ -1,4 +1,5 @@
 // BP primary & secondary navigation - directory and single screens
+// @version 3.0.0
 
 // all devices & generic styles sitewide
 .bp-navs {
@@ -32,7 +33,7 @@
 				text-decoration: none;
 			}
 
-			span {
+			.count {
 				background: $light-grey;
 				border: 1px solid $bp-border-dark;
 				border-radius: 50%;
@@ -92,7 +93,7 @@
 
 			a {
 
-				span {
+				.count {
 					background-color: $grey;
 				}
 			}
@@ -116,10 +117,6 @@
 			a:hover {
 				background: $dark-grey;
 				color: $off-white;
-
-				span {
-					border-color: $off-white;
-				}
 			}
 		}
 	}
@@ -152,9 +149,9 @@
 			}
 		}
 
-		&.bp-dir-hori-nav {
+		&.bp-dir-hori-nav:not(.bp-vertical-navs) {
 
-			nav {
+			nav:not(.tabbed-links) {
 				border-bottom: 1px solid $bp-border-color;
 				border-top: 1px solid $bp-border-color;
 
@@ -207,24 +204,6 @@
 	}
 }
 
-// massage link padding
-
-.buddypress-wrap:not(.bp-vertical-navs) {
-
-	.main-navs.single-screen-navs {
-
-		@include medium-up {
-
-			> ul > li:first-child {
-
-				a {
-					padding-left: 0;
-				}
-			}
-		}
-	}
-}
-
 // Specifically default subnav elements
 .buddypress-wrap {
 
@@ -253,16 +232,6 @@
 					}
 				}
 
-			}
-
-			@include medium-up {
-
-				li:first-child {
-
-					a {
-						padding-left: 0;
-					}
-				}
 			}
 		}
 	}
@@ -338,7 +307,7 @@
 
 			a {
 
-				span {
+				.count {
 					background-color: $white;
 				}
 			}
@@ -350,7 +319,7 @@
 
 			a {
 
-				span {
+				.count {
 					background-color: $highlight;
 					border: 0;
 					color: $off-white;
@@ -362,7 +331,7 @@
 
 			a:hover {
 
-				span {
+				.count {
 					background-color: $highlight;
 					border: 0;
 					color: $white;
@@ -374,19 +343,20 @@
 
 			a {
 
-				span:empty {
+				.count:empty {
 					display: none;
 				}
 			}
 		}
 	} // bp-navs
 
-	// Create steps current postion tabs highlight
+	// Create steps current position tabs highlight
 	.bp-navs.group-create-links {
 
 		ul {
 
 			li:not(.current) {
+				color: $light-text;
 
 				a {
 					color: $light-text;
@@ -464,7 +434,7 @@
 
 			a {
 
-				span {
+				.count {
 					display: inline-block;
 					float: right;
 				}
@@ -486,7 +456,7 @@
 
 			a {
 
-				span {
+				.count {
 					float: right;
 
 				}
@@ -503,59 +473,56 @@
 
 .buddypress-wrap {
 
-	.item-body {
+	@include medium-up {
 
-		@include medium-up {
+		// Profile group labels links
+		// Button navigation as tabbed effect for wide screen
 
-			// Profile group labels links
-			// Button navigation as tabbed effect for wide screen
+		@include tabbed-links();
 
-			@include tabbed-links();
+		.bp-navs.tabbed-links {
+			background: none;
+			margin-top: 2px;
 
-			.bp-navs.tabbed-links {
-				background: none;
-				margin-top: 2px;
+			&.main-navs {
 
-				li#compose-personal-li {
-					margin-top: 6px;
-				}
+			}
 
-				// For tabbed nav we remove any default button nav styles.
-				ul {
+			// For tabbed nav we remove any default button nav styles.
+			ul {
 
-					li {
+				li {
 
-						a {
-							border-right: 0;
-							font-size: inherit;
-						}
-					}
-
-					li.last {
-						float: right;
-						margin: 0;
-
-						a {
-							margin-top: -0.5em;
-						}
-					}
-
-					li,
-					li.current {
-
-						a,
-						a:focus,
-						a:hover {
-							background: none;
-							border: 0;
-						}
-
-						a:active {
-							outline: none;
-						}
+					a {
+						border-right: 0;
+						font-size: inherit;
 					}
 				}
-			} // close .bp-navs.tabbed-links
-		} // @media
-	}
+
+				li.last {
+					float: right;
+					margin: 0;
+
+					a {
+						margin-top: -0.5em;
+					}
+				}
+
+				li,
+				li.current {
+
+					a,
+					a:focus,
+					a:hover {
+						background: none;
+						border: 0;
+					}
+
+					a:active {
+						outline: none;
+					}
+				}
+			}
+		} // close .bp-navs.tabbed-links
+	} // @media
 }

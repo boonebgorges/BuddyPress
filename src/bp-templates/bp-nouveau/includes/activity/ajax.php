@@ -3,6 +3,7 @@
  * Activity Ajax functions
  *
  * @since 3.0.0
+ * @version 3.1.0
  */
 
 // Exit if accessed directly.
@@ -438,11 +439,20 @@ function bp_nouveau_ajax_get_activity_objects() {
 
 		wp_send_json_success( array_map( 'bp_nouveau_prepare_group_for_js', $groups['groups'] ) );
 	} else {
+
+		/**
+		 * Filters the response for custom activity objects.
+		 *
+		 * @since 3.0.0
+		 *
+		 * @param array $response Array of custom response objects to send to AJAX return.
+		 * @param array $value    Activity object type from $_POST global.
+		 */
 		$response = apply_filters( 'bp_nouveau_get_activity_custom_objects', $response, $_POST['type'] );
 	}
 
 	if ( empty( $response ) ) {
-		wp_send_json_error( array( 'error' => __( 'No items were found.', 'buddypress' ) ) );
+		wp_send_json_error( array( 'error' => __( 'No activities were found.', 'buddypress' ) ) );
 	} else {
 		wp_send_json_success( $response );
 	}
@@ -541,8 +551,16 @@ function bp_nouveau_ajax_post_update() {
 
 	wp_send_json_success( array(
 		'id'           => $activity_id,
-		'message'      => sprintf( __( 'Update posted <a href="%s" class="just-posted">View activity</a>', 'buddypress' ), esc_url( bp_activity_get_permalink( $activity_id ) ) ),
+		'message'      => esc_html__( 'Update posted.', 'buddypress' ) . ' ' . sprintf( '<a href="%s" class="just-posted">%s</a>', esc_url( bp_activity_get_permalink( $activity_id ) ), esc_html__( 'View activity.', 'buddypress' ) ),
 		'activity'     => $acivity,
+
+		/**
+		 * Filters whether or not an AJAX post update is private.
+		 *
+		 * @since 3.0.0
+		 *
+		 * @param string/bool $is_private Privacy status for the update.
+		 */
 		'is_private'   => apply_filters( 'bp_nouveau_ajax_post_update_is_private', $is_private ),
 		'is_directory' => bp_is_activity_directory(),
 	) );
@@ -561,7 +579,7 @@ function bp_nouveau_ajax_spam_activity() {
 	$response = array(
 		'feedback' => sprintf(
 			'<div class="bp-feedback bp-messages error">%s</div>',
-			esc_html__( 'There was a problem spamming this item. Please try again.', 'buddypress' )
+			esc_html__( 'There was a problem marking this activity as spam. Please try again.', 'buddypress' )
 		),
 	);
 
@@ -610,7 +628,7 @@ function bp_nouveau_ajax_spam_activity() {
 	// If on a single activity redirect to user's home.
 	if ( ! empty( $_POST['is_single'] ) ) {
 		$response['redirect'] = bp_core_get_user_domain( $activity->user_id );
-		bp_core_add_message( __( 'The activity item has been marked as spam and is no longer visible.', 'buddypress' ) );
+		bp_core_add_message( __( 'This activity has been marked as spam and is no longer visible.', 'buddypress' ) );
 	}
 
 	// Send the json reply

@@ -3,6 +3,7 @@
  * BuddyPress - Users Profile
  *
  * @since 3.0.0
+ * @version 3.0.0
  */
 ?>
 
@@ -14,7 +15,7 @@
 	</ul>
 </nav><!-- .item-list-tabs -->
 
-<?php bp_nouveau_xprofile_hook( 'before', 'profile_content' ); ?>
+<?php bp_nouveau_member_hook( 'before', 'profile_content' ); ?>
 
 <div class="profile <?php echo bp_current_action(); ?>">
 
@@ -58,4 +59,4 @@ endswitch;
 </div><!-- .profile -->
 
 <?php
-bp_nouveau_xprofile_hook( 'after', 'profile_content' );
+bp_nouveau_member_hook( 'after', 'profile_content' );

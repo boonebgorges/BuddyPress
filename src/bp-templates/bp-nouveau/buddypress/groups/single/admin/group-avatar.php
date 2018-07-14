@@ -3,17 +3,29 @@
  * BP Nouveau Group's avatar template.
  *
  * @since 3.0.0
+ * @version 3.1.0
  */
 ?>
-<h2 class="bp-screen-title <?php if ( bp_is_group_create() ) { echo esc_attr( 'creation-step-name' ); } ?>">
-	<?php _e( 'Group Avatar', 'buddypress' ); ?>
-</h2>
+
+<?php if ( bp_is_group_create() ) : ?>
+
+	<h3 class="bp-screen-title creation-step-name">
+		<?php esc_html_e( 'Upload Group Avatar', 'buddypress' ); ?>
+	</h3>
+
+<?php else : ?>
+
+	<h2 class="bp-screen-title">
+		<?php esc_html_e( 'Change Group Avatar', 'buddypress' ); ?>
+	</h2>
+
+<?php endif; ?>
 
 <?php if ( ! bp_is_group_create() ) : ?>
 	<?php if ( ! bp_get_group_has_avatar() ) : ?>
-		<p class="bp-help-text"><?php _e( 'Add an image to use as a profile photo for this group. The image will be shown on the main group page, and in search results.', 'buddypress' ); ?></p>
+		<p class="bp-help-text"><?php esc_html_e( 'Add an image to use as a profile photo for this group. The image will be shown on the main group page, and in search results.', 'buddypress' ); ?></p>
 	<?php else : ?>
-		<p class="bp-help-text"><?php _e( 'Edit or update your avatar image for this group.', 'buddypress' ); ?></p>
+		<p class="bp-help-text"><?php esc_html_e( 'Edit or update your avatar image for this group.', 'buddypress' ); ?></p>
 	<?php endif; ?>
 <?php endif; ?>
 
@@ -31,22 +43,22 @@
 		<div class="main-column">
 	<?php endif; ?>
 
-			<p class="bp-help-text"><?php _e( 'Upload an image to use as a profile photo for this group. The image will be shown on the main group page, and in search results.', 'buddypress' ); ?></p>
+			<p class="bp-help-text"><?php esc_html_e( 'Upload an image to use as a profile photo for this group. The image will be shown on the main group page, and in search results.', 'buddypress' ); ?></p>
 
 			<p>
-				<label for="file" class="bp-screen-reader-text"><?php _e( 'Select an image', 'buddypress' ); ?></label>
+				<label for="file" class="bp-screen-reader-text"><?php esc_html_e( 'Select an image', 'buddypress' ); ?></label>
 				<input type="file" name="file" id="file" />
 				<input type="submit" name="upload" id="upload" value="<?php esc_attr_e( 'Upload Image', 'buddypress' ); ?>" />
 				<input type="hidden" name="action" id="action" value="bp_avatar_upload" />
 			</p>
 
 	<?php if ( bp_is_group_create() ) : ?>
-			<p class="bp-help-text"><?php _e( 'To skip the group profile photo upload process, hit the "Next Step" button.', 'buddypress' ); ?></p>
+			<p class="bp-help-text"><?php esc_html_e( 'To skip the group profile photo upload process, hit the "Next Step" button.', 'buddypress' ); ?></p>
 		</div><!-- .main-column -->
 
 	<?php elseif ( bp_get_group_has_avatar() ) : ?>
 
-		<p><?php _e( "If you'd like to remove the existing group profile photo but not upload a new one, please use the delete group profile photo button.", 'buddypress' ); ?></p>
+		<p><?php esc_html_e( "If you'd like to remove the existing group profile photo but not upload a new one, please use the delete group profile photo button.", 'buddypress' ); ?></p>
 
 		<?php
 		bp_button(
@@ -83,7 +95,7 @@ endif;
 if ( 'crop-image' === bp_get_avatar_admin_step() ) :
 ?>
 
-	<h4><?php _e( 'Crop Group Profile Photo', 'buddypress' ); ?></h4>
+	<h2><?php esc_html_e( 'Crop Group Profile Photo', 'buddypress' ); ?></h2>
 
 	<img src="<?php bp_avatar_to_crop(); ?>" id="avatar-to-crop" class="avatar" alt="<?php esc_attr_e( 'Profile photo to crop', 'buddypress' ); ?>" />
 

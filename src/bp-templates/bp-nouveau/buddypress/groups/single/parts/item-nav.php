@@ -3,6 +3,7 @@
  * BuddyPress Single Groups item Navigation
  *
  * @since 3.0.0
+ * @version 3.0.0
  */
 ?>
 
@@ -22,7 +23,7 @@
 						<?php bp_nouveau_nav_link_text(); ?>
 
 						<?php if ( bp_nouveau_nav_has_count() ) : ?>
-							<span><?php bp_nouveau_nav_count(); ?></span>
+							<span class="count"><?php bp_nouveau_nav_count(); ?></span>
 						<?php endif; ?>
 					</a>
 				</li>

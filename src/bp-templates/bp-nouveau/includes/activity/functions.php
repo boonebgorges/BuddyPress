@@ -3,6 +3,7 @@
  * Activity functions
  *
  * @since 3.0.0
+ * @version 3.1.0
  */
 
 // Exit if accessed directly.
@@ -83,13 +84,17 @@ function bp_nouveau_activity_localize_scripts( $params = array() ) {
 			) ),
 			'avatar_width'  => $width,
 			'avatar_height' => $height,
-			'avatar_alt'    => sprintf( __( 'Profile photo of %s', 'buddypress' ), $user_displayname ),
-			'user_domain'   => bp_loggedin_user_domain()
+			'user_domain'   => bp_loggedin_user_domain(),
+			'avatar_alt'    => sprintf(
+				/* translators: %s = member name */
+				__( 'Profile photo of %s', 'buddypress' ),
+				$user_displayname
+			),
 		) );
 	}
 
 	/**
-	 * Filter to include specific Action buttons.
+	 * Filters the included, specific, Action buttons.
 	 *
 	 * @since 3.0.0
 	 *
@@ -144,6 +149,13 @@ function bp_nouveau_activity_localize_scripts( $params = array() ) {
 			);
 		}
 
+		/**
+		 * Filters the activity objects to apply for localized javascript data.
+		 *
+		 * @since 3.0.0
+		 *
+		 * @param array $activity_objects Array of activity objects.
+		 */
 		$activity_params['objects'] = apply_filters( 'bp_nouveau_activity_objects', $activity_objects );
 	}
 
@@ -151,6 +163,8 @@ function bp_nouveau_activity_localize_scripts( $params = array() ) {
 		'whatsnewPlaceholder' => sprintf( __( "What's new, %s?", 'buddypress' ), bp_get_user_firstname( $user_displayname ) ),
 		'whatsnewLabel'       => __( 'Post what\'s new', 'buddypress' ),
 		'whatsnewpostinLabel' => __( 'Post in', 'buddypress' ),
+		'postUpdateButton'    => __( 'Post Update', 'buddypress' ),
+		'cancelButton'        => __( 'Cancel', 'buddypress' ),
 	);
 
 	if ( bp_is_group() ) {
@@ -275,6 +289,8 @@ function bp_nouveau_get_activity_directory_nav_items() {
 	}
 
 	/**
+	 * Filters the activity directory navigation items.
+	 *
 	 * Use this filter to introduce your custom nav items for the activity directory.
 	 *
 	 * @since 3.0.0
@@ -403,7 +419,7 @@ function bp_nouveau_activity_scope_newest_class( $classes = '' ) {
 				$new_mentions = bp_get_user_meta( $user_id, 'bp_new_mentions', true );
 
 				// The current activity is one of the new mentions
-				if ( is_array( $new_mentions ) && in_array( bp_get_activity_id(), $new_mentions ) ) {
+				if ( is_array( $new_mentions ) && in_array( bp_get_activity_id(), $new_mentions, true ) ) {
 					$my_classes[] = 'bp-my-mentions';
 				}
 			}
@@ -417,6 +433,16 @@ function bp_nouveau_activity_scope_newest_class( $classes = '' ) {
 		}
 
 		// Leave other components do their specific stuff if needed.
+		/**
+		 * Filters the classes to be applied to the newest activity item.
+		 *
+		 * Leave other components do their specific stuff if needed.
+		 *
+		 * @since 3.0.0
+		 *
+		 * @param array  $my_classes Array of classes to output to class attribute.
+		 * @param string $scope      Current scope for the activity type.
+		 */
 		$my_classes = (array) apply_filters( 'bp_nouveau_activity_scope_newest_class', $my_classes, $scope );
 
 		if ( ! empty( $my_classes ) ) {
@@ -425,36 +451,6 @@ function bp_nouveau_activity_scope_newest_class( $classes = '' ) {
 	}
 
 	return $classes;
-}
-
-/**
- * @since 3.0.0
- */
-function bp_nouveau_activity_time_since( $time_since, $activity = null ) {
-	if ( ! isset( $activity->date_recorded ) ) {
-		return $time_since;
-	}
-
-	return apply_filters(
-		'bp_nouveau_activity_time_since', sprintf(
-			'<time class="time-since" datetime="%1$s" data-bp-timestamp="%2$d">%3$s</time>',
-			esc_attr( $activity->date_recorded ),
-			esc_attr( strtotime( $activity->date_recorded ) ),
-			esc_attr( bp_core_time_since( $activity->date_recorded ) )
-		)
-	);
-}
-
-/**
- * @since 3.0.0
- */
-function bp_nouveau_activity_allowed_tags( $activity_allowedtags = array() ) {
-	$activity_allowedtags['time']                      = array();
-	$activity_allowedtags['time']['class']             = array();
-	$activity_allowedtags['time']['datetime']          = array();
-	$activity_allowedtags['time']['data-bp-timestamp'] = array();
-
-	return $activity_allowedtags;
 }
 
 /**
@@ -473,11 +469,11 @@ function bp_nouveau_activity_widget_query() {
 	}
 
 	/**
-	 * Filter to edit the activity widget arguments
+	 * Filter to edit the activity widget arguments.
 	 *
 	 * @since 3.0.0
 	 *
-	 * @param  array $args The activity arguments.
+	 * @param array $args The activity arguments.
 	 */
 	return apply_filters( 'bp_nouveau_activity_widget_query', $args );
 }
@@ -509,4 +505,30 @@ function bp_nouveau_activity_notification_filters() {
 	foreach ( $notifications as $notification ) {
 		bp_nouveau_notifications_register_filter( $notification );
 	}
+}
+
+/**
+ * Add controls for the settings of the customizer for the activity component.
+ *
+ * @since 3.0.0
+ *
+ * @param array $controls Optional. The controls to add.
+ *
+ * @return array the controls to add.
+ */
+function bp_nouveau_activity_customizer_controls( $controls = array() ) {
+	return array_merge( $controls, array(
+		'act_dir_layout' => array(
+			'label'      => __( 'Use column navigation for the Activity directory.', 'buddypress' ),
+			'section'    => 'bp_nouveau_dir_layout',
+			'settings'   => 'bp_nouveau_appearance[activity_dir_layout]',
+			'type'       => 'checkbox',
+		),
+		'act_dir_tabs' => array(
+			'label'      => __( 'Use tab styling for Activity directory navigation.', 'buddypress' ),
+			'section'    => 'bp_nouveau_dir_layout',
+			'settings'   => 'bp_nouveau_appearance[activity_dir_tabs]',
+			'type'       => 'checkbox',
+		),
+	) );
 }

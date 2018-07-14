@@ -109,6 +109,9 @@ add_filter( 'bp_get_total_mention_count_for_user',  'bp_core_number_format' );
 
 add_filter( 'bp_activity_get_embed_excerpt', 'bp_activity_embed_excerpt_onclick_location_filter', 9 );
 
+// Personal data export.
+add_filter( 'wp_privacy_personal_data_exporters', 'bp_activity_register_personal_data_exporter' );
+
 /* Actions *******************************************************************/
 
 // At-name filter.
@@ -202,36 +205,6 @@ function bp_activity_check_blacklist_keys( $activity ) {
  * @return string $content Filtered activity content.
  */
 function bp_activity_filter_kses( $content ) {
-	global $allowedtags;
-
-	$activity_allowedtags = $allowedtags;
-	$activity_allowedtags['a']['aria-label']      = array();
-	$activity_allowedtags['a']['class']           = array();
-	$activity_allowedtags['a']['data-bp-tooltip'] = array();
-	$activity_allowedtags['a']['id']              = array();
-	$activity_allowedtags['a']['rel']             = array();
-	$activity_allowedtags['a']['title']           = array();
-
-	$activity_allowedtags['b']    = array();
-	$activity_allowedtags['code'] = array();
-	$activity_allowedtags['i']    = array();
-
-	$activity_allowedtags['img']           = array();
-	$activity_allowedtags['img']['src']    = array();
-	$activity_allowedtags['img']['alt']    = array();
-	$activity_allowedtags['img']['width']  = array();
-	$activity_allowedtags['img']['height'] = array();
-	$activity_allowedtags['img']['class']  = array();
-	$activity_allowedtags['img']['id']     = array();
-
-	$activity_allowedtags['span']                   = array();
-	$activity_allowedtags['span']['class']          = array();
-	$activity_allowedtags['span']['data-livestamp'] = array();
-
-	$activity_allowedtags['ul'] = array();
-	$activity_allowedtags['ol'] = array();
-	$activity_allowedtags['li'] = array();
-
 	/**
 	 * Filters the allowed HTML tags for BuddyPress Activity content.
 	 *
@@ -239,7 +212,7 @@ function bp_activity_filter_kses( $content ) {
 	 *
 	 * @param array $value Array of allowed HTML tags and attributes.
 	 */
-	$activity_allowedtags = apply_filters( 'bp_activity_allowed_tags', $activity_allowedtags );
+	$activity_allowedtags = apply_filters( 'bp_activity_allowed_tags', bp_get_allowedtags() );
 	return wp_kses( $content, $activity_allowedtags );
 }
 
@@ -832,3 +805,20 @@ function bp_activity_filter_mentions_scope( $retval = array(), $filter = array()
 	return $retval;
 }
 add_filter( 'bp_activity_set_mentions_scope_args', 'bp_activity_filter_mentions_scope', 10, 2 );
+
+/**
+ * Registers Activity personal data exporter.
+ *
+ * @since 4.0.0
+ *
+ * @param array $exporters  An array of personal data exporters.
+ * @return array An array of personal data exporters.
+ */
+function bp_activity_register_personal_data_exporter( $exporters ) {
+	$exporters['buddypress-activity'] = array(
+		'exporter_friendly_name' => __( 'BuddyPress Activity Data', 'buddypress' ),
+		'callback'               => 'bp_activity_personal_data_exporter',
+	);
+
+	return $exporters;
+}

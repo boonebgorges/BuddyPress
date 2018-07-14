@@ -3,6 +3,7 @@
  * Activity Template tags
  *
  * @since 3.0.0
+ * @version 3.1.0
  */
 
 // Exit if accessed directly.
@@ -17,14 +18,14 @@ function bp_nouveau_before_activity_directory_content() {
 	/**
 	 * Fires at the begining of the templates BP injected content.
 	 *
-	 * @since 2.3.0 (BuddyPress)
+	 * @since 2.3.0
 	 */
 	do_action( 'bp_before_directory_activity' );
 
 	/**
 	 * Fires before the activity directory display content.
 	 *
-	 * @since 1.2.0 (BuddyPress)
+	 * @since 1.2.0
 	 */
 	do_action( 'bp_before_directory_activity_content' );
 }
@@ -137,14 +138,14 @@ function bp_nouveau_activity_member_post_form() {
 function bp_nouveau_activity_hook( $when = '', $suffix = '' ) {
 	$hook = array( 'bp' );
 
-	if ( ! $when ) {
+	if ( $when ) {
 		$hook[] = $when;
 	}
 
 	// It's a activity entry hook
 	$hook[] = 'activity';
 
-	if ( ! $suffix ) {
+	if ( $suffix ) {
 		$hook[] = $suffix;
 	}
 
@@ -175,10 +176,37 @@ function bp_nouveau_activity_content() {
 	/**
 	 * Fires after the display of an activity entry content.
 	 *
-	 * @since 1.2.0 (BuddyPress)
+	 * @since 1.2.0
 	 */
 	do_action( 'bp_activity_entry_content' );
 }
+
+/**
+ * Output the Activity timestamp into the bp-timestamp attribute.
+ *
+ * @since 3.0.0
+ */
+function bp_nouveau_activity_timestamp() {
+	echo esc_attr( bp_nouveau_get_activity_timestamp() );
+}
+
+	/**
+	 * Get the Activity timestamp.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return integer The Activity timestamp.
+	 */
+	function bp_nouveau_get_activity_timestamp() {
+		/**
+		 * Filter here to edit the activity timestamp.
+		 *
+		 * @since 3.0.0
+		 *
+		 * @param integer $value The Activity timestamp.
+		 */
+		return apply_filters( 'bp_nouveau_get_activity_timestamp', strtotime( bp_get_activity_date_recorded() ) );
+	}
 
 /**
  * Output the action buttons inside an Activity Loop.
@@ -195,7 +223,7 @@ function bp_nouveau_activity_entry_buttons( $args = array() ) {
 	/**
 	 * Fires at the end of the activity entry meta data area.
 	 *
-	 * @since 1.2.0 (BuddyPress)
+	 * @since 1.2.0
 	 */
 	do_action( 'bp_activity_entry_meta' );
 
@@ -283,7 +311,7 @@ function bp_nouveau_activity_entry_buttons( $args = array() ) {
 					),
 				'link_text' => sprintf(
 					'<span class="bp-screen-reader-text">%1$s</span>',
-					esc_html__( 'View Conversation', 'buddypress' )
+					__( 'View Conversation', 'buddypress' )
 				),
 			);
 
@@ -311,12 +339,12 @@ function bp_nouveau_activity_entry_buttons( $args = array() ) {
 				'button_attr'       => array(
 					'id'              => 'acomment-comment-' . $activity_id,
 					'class'           => 'button acomment-reply bp-primary-action bp-tooltip',
-					'data-bp-tooltip' => __( 'Comment', 'buddypress' ),
+					'data-bp-tooltip' => _x( 'Comment', 'button', 'buddypress' ),
 					'aria-expanded'   => 'false',
 				),
 				'link_text'  => sprintf(
 					'<span class="bp-screen-reader-text">%1$s</span> <span class="comment-count">%2$s</span>',
-					esc_html__( 'Comment', 'buddypress' ),
+					_x( 'Comment', 'link', 'buddypress' ),
 					esc_html( bp_activity_get_comment_count() )
 				),
 			);
@@ -407,16 +435,20 @@ function bp_nouveau_activity_entry_buttons( $args = array() ) {
 				}
 			}
 
-			$delete_args = wp_parse_args( $delete_args, array(
-				'link_text'   => '',
-				'button_attr' => array(
-					'link_id'         => '',
-					'link_href'       => '',
-					'link_class'      => '',
-					'link_rel'        => 'nofollow',
-					'data_bp_tooltip' => '',
+			$delete_args = bp_parse_args(
+				$delete_args,
+				array(
+					'link_text'   => '',
+					'button_attr' => array(
+						'link_id'         => '',
+						'link_href'       => '',
+						'link_class'      => '',
+						'link_rel'        => 'nofollow',
+						'data_bp_tooltip' => '',
+					),
 				),
-			) );
+				'nouveau_get_activity_entry_buttons'
+			);
 		}
 
 		if ( empty( $delete_args['link_href'] ) ) {
@@ -425,8 +457,8 @@ function bp_nouveau_activity_entry_buttons( $args = array() ) {
 				'link_id'         => '',
 				'link_class'      => 'button item-button bp-secondary-action bp-tooltip delete-activity confirm',
 				'link_rel'        => 'nofollow',
-				'data_bp_tooltip' => __( 'Delete', 'buddypress' ),
-				'link_text'       => __( 'Delete', 'buddypress' ),
+				'data_bp_tooltip' => _x( 'Delete', 'button', 'buddypress' ),
+				'link_text'       => _x( 'Delete', 'button', 'buddypress' ),
 				'link_href'       => bp_get_activity_delete_url(),
 			);
 
@@ -470,13 +502,13 @@ function bp_nouveau_activity_entry_buttons( $args = array() ) {
 				'button_element'    => $button_element,
 				'button_attr'       => array(
 					'class'           => 'bp-secondary-action spam-activity confirm button item-button bp-tooltip',
-					'id'              =>  'activity_make_spam_' . $activity_id,
-					'data-bp-tooltip' =>  __( 'Spam', 'buddypress' ),
+					'id'              => 'activity_make_spam_' . $activity_id,
+					'data-bp-tooltip' => _x( 'Spam', 'button', 'buddypress' ),
 					),
 				'link_text'  => sprintf(
 					/** @todo: use a specific css rule for this *************************************************************/
 					'<span class="dashicons dashicons-flag" style="color:#a00;vertical-align:baseline;width:18px;height:18px" aria-hidden="true"></span><span class="bp-screen-reader-text">%s</span>',
-					esc_html__( 'Spam', 'buddypress' )
+					esc_html_x( 'Spam', 'button', 'buddypress' )
 				),
 			);
 
@@ -534,7 +566,7 @@ function bp_nouveau_activity_entry_buttons( $args = array() ) {
 			unset( $return['activity_delete'] );
 		}
 
-		if ( isset( $return['activity_spam'] ) && ! in_array( $activity_type, BP_Akismet::get_activity_types() ) ) {
+		if ( isset( $return['activity_spam'] ) && ! in_array( $activity_type, BP_Akismet::get_activity_types(), true ) ) {
 			unset( $return['activity_spam'] );
 		}
 
@@ -585,7 +617,7 @@ function bp_nouveau_activity_recurse_comments( $comment ) {
 	/**
 	 * Filters the opening tag for the template that lists activity comments.
 	 *
-	 * @since 1.6.0 (BuddyPress)
+	 * @since 1.6.0
 	 *
 	 * @param string $value Opening tag for the HTML markup to use.
 	 */
@@ -599,7 +631,7 @@ function bp_nouveau_activity_recurse_comments( $comment ) {
 		/**
 		 * Fires before the display of an activity comment.
 		 *
-		 * @since 1.5.0 (BuddyPress)
+		 * @since 1.5.0
 		 */
 		do_action( 'bp_before_activity_comment' );
 
@@ -608,7 +640,7 @@ function bp_nouveau_activity_recurse_comments( $comment ) {
 		/**
 		 * Fires after the display of an activity comment.
 		 *
-		 * @since 1.5.0 (BuddyPress)
+		 * @since 1.5.0
 		 */
 		do_action( 'bp_after_activity_comment' );
 
@@ -618,7 +650,7 @@ function bp_nouveau_activity_recurse_comments( $comment ) {
 	/**
 	 * Filters the closing tag for the template that list activity comments.
 	 *
-	 * @since 1.6.0 (BuddyPress)
+	 * @since 1.6.0
 	 *
 	 * @param string $value Closing tag for the HTML markup to use.
 	 */
@@ -667,13 +699,6 @@ function bp_nouveau_activity_comment_action() {
  */
 function bp_nouveau_activity_comment_form() {
 	bp_get_template_part( 'activity/comment-form' );
-
-	/**
-	 * Fires after the activity entry comment form.
-	 *
-	 * @since 1.5.0 (BuddyPress)
-	 */
-	do_action( 'bp_activity_entry_comments' );
 }
 
 /**
@@ -690,7 +715,7 @@ function bp_nouveau_activity_comment_buttons( $args = array() ) {
 	/**
 	 * Fires after the defualt comment action options display.
 	 *
-	 * @since 1.6.0 (BuddyPress)
+	 * @since 1.6.0
 	 */
 	do_action( 'bp_activity_comment_options' );
 
@@ -766,8 +791,8 @@ function bp_nouveau_activity_comment_buttons( $args = array() ) {
 				'parent_element'    => $parent_element,
 				'parent_attr'       => $parent_attr,
 				'button_element'    => $button_element,
-				'link_text'         => __( 'Reply', 'buddypress' ),
-				'button_attr'       =>  array(
+				'link_text'         => _x( 'Reply', 'link', 'buddypress' ),
+				'button_attr'       => array(
 					'class' => "acomment-reply bp-primary-action",
 					'id'    => sprintf( 'acomment-reply-%1$s-from-%2$s', $activity_id, $activity_comment_id ),
 				),
@@ -780,11 +805,11 @@ function bp_nouveau_activity_comment_buttons( $args = array() ) {
 				'parent_element'    => $parent_element,
 				'parent_attr'       => $parent_attr,
 				'button_element'    => $button_element,
-				'link_text'         => __( 'Delete', 'buddypress' ),
+				'link_text'         => _x( 'Delete', 'link', 'buddypress' ),
 				'button_attr'       => array(
 					'class' => 'delete acomment-delete confirm bp-secondary-action',
 					'rel'   => 'nofollow',
-					),
+				),
 			),
 		);
 
@@ -807,7 +832,7 @@ function bp_nouveau_activity_comment_buttons( $args = array() ) {
 				'parent_element'    => $parent_element,
 				'parent_attr'       => $parent_attr,
 				'button_element'    => $button_element,
-				'link_text'         => __( 'Spam', 'buddypress' ),
+				'link_text'         => _x( 'Spam', 'link', 'buddypress' ),
 				'button_attr'       => array(
 					'id'     => "activity_make_spam_{$activity_comment_id}",
 					'class'  => 'bp-secondary-action spam-activity-comment confirm',
