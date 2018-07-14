@@ -43,6 +43,8 @@ define( 'BP_REQUIRED_PHP_VERSION', '5.3.0' );
  * @return BuddyPress|null The one true BuddyPress Instance.
  */
 function buddypress() {
+	// Not PHP7 compat.
+	$foo = split( 'foo', 'barfoobar' );
 	return BuddyPress::instance();
 }
 

@@ -73,10 +73,6 @@ before_install:
       phpenv config-rm xdebug.ini
     fi
 
-  # PHP linting
-  - cd $plugin_dir
-  - php tests/lint-php/lint-php.php .
-
   # set up tests config
   - cd $WP_DEVELOP_DIR
   - echo $WP_DEVELOP_DIR
@@ -118,7 +114,10 @@ before_script:
   - npm install
 
 # Run tests
-script: grunt $BP_TRAVISCI
+script:
+# - grunt $BP_TRAVISCI
+  - php tests/lint-php/lint-php.php .
+
 
 notifications:
   email: false
