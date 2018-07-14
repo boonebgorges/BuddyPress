@@ -115,9 +115,8 @@ before_script:
 
 # Run tests
 script:
-# - grunt $BP_TRAVISCI
   - php tests/lint-php/lint-php.php .
-
+  - grunt $BP_TRAVISCI
 
 notifications:
   email: false
