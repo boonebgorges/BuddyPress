@@ -73,6 +73,10 @@ before_install:
       phpenv config-rm xdebug.ini
     fi
 
+  # PHP linting
+  - cd $plugin_dir
+  - php tests/lint-php/lint-php.php .
+
   # set up tests config
   - cd $WP_DEVELOP_DIR
   - echo $WP_DEVELOP_DIR
