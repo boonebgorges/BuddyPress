@@ -241,6 +241,9 @@ module.exports = function( grunt ) {
 				src: [ '**/*.scss' ]
 			}
 		},
+		phplint: {
+			good: ['**/*.php'].concat( BP_EXCLUDED_MISC )
+		},
 		postcss: {
 			options: {
 				map: false,
@@ -290,7 +293,7 @@ module.exports = function( grunt ) {
 				stdout: false
 			},
 			cli: {
-				command: 'svn export --force https://github.com/buddypress/wp-cli-buddypress.git/trunk@579 cli',
+				command: 'svn export --force https://github.com/buddypress/wp-cli-buddypress.git/tags/1.7 cli',
 				cwd: BUILD_DIR,
 				stdout: false
 			}
@@ -329,7 +332,7 @@ module.exports = function( grunt ) {
 	 * Register tasks.
 	 */
 	grunt.registerTask( 'src',     ['checkDependencies', 'jsvalidate:src', 'jshint', 'stylelint', 'sass', 'postcss', 'rtlcss'] );
-	grunt.registerTask( 'commit',  ['src', 'checktextdomain', 'imagemin'] );
+	grunt.registerTask( 'commit',  ['src', 'checktextdomain', 'imagemin','phplint'] );
 	grunt.registerTask( 'build',   ['commit', 'clean:all', 'copy:files', 'uglify', 'jsvalidate:build', 'cssmin', 'makepot', 'exec:bpdefault', 'exec:cli'] );
 	grunt.registerTask( 'release', ['build'] );
 
@@ -348,7 +351,7 @@ module.exports = function( grunt ) {
 
 	// Travis CI Tasks.
 	grunt.registerTask( 'travis:grunt', 'Runs Grunt build task.', [ 'build' ]);
-	grunt.registerTask( 'travis:phpunit', ['jsvalidate:src', 'jshint', 'checktextdomain', 'test'] );
+	grunt.registerTask( 'travis:phpunit', ['jsvalidate:src', 'jshint', 'checktextdomain', 'phplint', 'test'] );
 	grunt.registerTask( 'travis:codecoverage', 'Runs PHPUnit tasks with code-coverage generation.', ['phpunit:codecoverage'] );
 
 	// Patch task.

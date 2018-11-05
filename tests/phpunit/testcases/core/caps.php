@@ -10,6 +10,10 @@ class BP_Tests_Core_Caps extends BP_UnitTestCase {
 			$this->markTestSkipped( __METHOD__ . ' requires multisite.' );
 		}
 
+		if ( function_exists( 'wp_initialize_site' ) ) {
+			$this->setExpectedDeprecated( 'wpmu_new_blog' );
+		}
+
 		$b = self::factory()->blog->create();
 		$u = self::factory()->user->create();
 
@@ -30,6 +34,10 @@ class BP_Tests_Core_Caps extends BP_UnitTestCase {
 	public function test_bp_current_user_can_should_respect_blog_id_passed_in_args_array() {
 		if ( ! is_multisite() ) {
 			$this->markTestSkipped( __METHOD__ . ' requires multisite.' );
+		}
+
+		if ( function_exists( 'wp_initialize_site' ) ) {
+			$this->setExpectedDeprecated( 'wpmu_new_blog' );
 		}
 
 		$b = self::factory()->blog->create();

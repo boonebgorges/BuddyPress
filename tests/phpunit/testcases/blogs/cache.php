@@ -10,7 +10,11 @@ class BP_Tests_Blogs_Cache extends BP_UnitTestCase {
 	 */
 	public function test_bp_blogs_update_meta_cache() {
 		if ( ! is_multisite() ) {
-			return;
+			$this->markTestSkipped();
+		}
+
+		if ( function_exists( 'wp_initialize_site' ) ) {
+			$this->setExpectedDeprecated( 'wpmu_new_blog' );
 		}
 
 		$b1 = self::factory()->blog->create();
@@ -91,7 +95,11 @@ class BP_Tests_Blogs_Cache extends BP_UnitTestCase {
 	 */
 	public function test_bp_blogs_update_meta_cache_bp_has_blogs() {
 		if ( ! is_multisite() ) {
-			return;
+			$this->markTestSkipped();
+		}
+
+		if ( function_exists( 'wp_initialize_site' ) ) {
+			$this->setExpectedDeprecated( 'wpmu_new_blog' );
 		}
 
 		$u = self::factory()->user->create();
@@ -185,7 +193,11 @@ class BP_Tests_Blogs_Cache extends BP_UnitTestCase {
 	 */
 	public function test_bp_blogs_update_meta_cache_bp_has_blogs_false() {
 		if ( ! is_multisite() ) {
-			return;
+			$this->markTestSkipped();
+		}
+
+		if ( function_exists( 'wp_initialize_site' ) ) {
+			$this->setExpectedDeprecated( 'wpmu_new_blog' );
 		}
 
 		$u = self::factory()->user->create();
@@ -238,7 +250,7 @@ class BP_Tests_Blogs_Cache extends BP_UnitTestCase {
 	 */
 	public function test_bp_blogs_total_count_should_respect_cached_value_of_0() {
 		if ( ! is_multisite() ) {
-			return;
+			$this->markTestSkipped();
 		}
 
 		global $wpdb;
@@ -260,7 +272,12 @@ class BP_Tests_Blogs_Cache extends BP_UnitTestCase {
 	 */
 	public function test_bp_blogs_total_blogs_count_after_delete_blog() {
 		if ( ! is_multisite() ) {
-			return;
+			$this->markTestSkipped();
+		}
+
+		if ( function_exists( 'wp_initialize_site' ) ) {
+			$this->setExpectedDeprecated( 'wpmu_new_blog' );
+			$this->setExpectedDeprecated( 'delete_blog' );
 		}
 
 		$u = self::factory()->user->create();
@@ -294,7 +311,11 @@ class BP_Tests_Blogs_Cache extends BP_UnitTestCase {
 	 */
 	public function test_update_blog_details_should_purge_blogmeta_cache() {
 		if ( ! is_multisite() ) {
-			return;
+			$this->markTestSkipped();
+		}
+
+		if ( function_exists( 'wp_initialize_site' ) ) {
+			$this->setExpectedDeprecated( 'wpmu_new_blog' );
 		}
 
 		$u = self::factory()->user->create();

@@ -347,7 +347,7 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 	 */
 	public function test_bp_core_process_spammer_status() {
 		if ( is_multisite() ) {
-			return;
+			$this->markTestSkipped();
 		}
 
 		$bp = buddypress();
@@ -375,7 +375,7 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 	 */
 	public function test_bp_core_process_spammer_status_ms_bulk_spam() {
 		if ( ! is_multisite() ) {
-			return;
+			$this->markTestSkipped();
 		}
 
 		$bp = buddypress();
@@ -403,7 +403,7 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 	 */
 	public function test_bp_core_process_spammer_status_ms_bulk_ham() {
 		if ( ! is_multisite() ) {
-			return;
+			$this->markTestSkipped();
 		}
 
 		$bp = buddypress();
@@ -515,6 +515,10 @@ class BP_Tests_Members_Functions extends BP_UnitTestCase {
 		);
 
 		if ( is_multisite() ) {
+			if ( function_exists( 'wp_initialize_site' ) ) {
+				$this->setExpectedDeprecated( 'wpmu_new_blog' );
+			}
+
 			$signups['ms-blog'] = array( 'signup_id' => self::factory()->signup->create( array(
 					'user_login'     => 'msblog',
 					'user_email'     => 'msblog@example.com',

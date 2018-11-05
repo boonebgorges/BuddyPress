@@ -760,7 +760,7 @@ Bar!';
 	 */
 	public function test_bp_activity_format_activity_action_custom_post_type_post_nonms() {
 		if ( is_multisite() ) {
-			return;
+			$this->markTestSkipped();
 		}
 
 		register_post_type( 'foo', array(
@@ -807,7 +807,11 @@ Bar!';
 	 */
 	public function test_bp_activity_format_activity_action_custom_post_type_post_ms() {
 		if ( ! is_multisite() ) {
-			return;
+			$this->markTestSkipped();
+		}
+
+		if ( function_exists( 'wp_initialize_site' ) ) {
+			$this->setExpectedDeprecated( 'wpmu_new_blog' );
 		}
 
 		$b = self::factory()->blog->create();
@@ -864,7 +868,7 @@ Bar!';
 	 */
 	public function test_bp_activity_format_activity_action_custom_string_post_type_post_nonms() {
 		if ( is_multisite() ) {
-			return;
+			$this->markTestSkipped();
 		}
 
 		$labels = array(
@@ -919,7 +923,11 @@ Bar!';
 	 */
 	public function test_bp_activity_format_activity_action_custom_string_post_type_post_ms() {
 		if ( ! is_multisite() ) {
-			return;
+			$this->markTestSkipped();
+		}
+
+		if ( function_exists( 'wp_initialize_site' ) ) {
+			$this->setExpectedDeprecated( 'wpmu_new_blog' );
 		}
 
 		$b = self::factory()->blog->create();
@@ -1053,6 +1061,10 @@ Bar!';
 	 */
 	public function test_bp_activity_format_activity_action_custom_post_type_comment() {
 		if ( is_multisite() ) {
+			if ( function_exists( 'wp_initialize_site' ) ) {
+				$this->setExpectedDeprecated( 'wpmu_new_blog' );
+			}
+
 			$b = self::factory()->blog->create();
 			switch_to_blog( $b );
 			add_filter( 'comment_flood_filter', '__return_false' );

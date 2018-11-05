@@ -3234,6 +3234,26 @@ function bp_send_email( $email_type, $to, $args = array() ) {
  * @return array
  */
 function bp_email_get_appearance_settings() {
+	/* translators: This is the copyright text for email footers. 1. Copyright year, 2. Site name */
+	$footer_text = array(
+		sprintf(
+			_x( '&copy; %1$s %2$s', 'email', 'buddypress' ),
+			date_i18n( 'Y' ),
+			bp_get_option( 'blogname' )
+		)
+	);
+
+	if ( version_compare( $GLOBALS['wp_version'], '4.9.6', '>=' ) ) {
+		$privacy_policy_url = get_privacy_policy_url();
+		if ( $privacy_policy_url ) {
+			$footer_text[] = sprintf(
+				'<a href="%s">%s</a>',
+				esc_url( $privacy_policy_url ),
+				esc_html__( 'Privacy Policy', 'buddypress' )
+			);
+		}
+	}
+
 	$default_args = array(
 		'body_bg'           => '#FFFFFF',
 		'body_text_color'   => '#555555',
@@ -3248,12 +3268,7 @@ function bp_email_get_appearance_settings() {
 		'header_text_size'  => 30,
 		'direction'         => is_rtl() ? 'right' : 'left',
 
-		'footer_text' => sprintf(
-			/* translators: email disclaimer, e.g. "© 2016 Site Name". */
-			_x( '&copy; %s %s', 'email', 'buddypress' ),
-			date_i18n( 'Y' ),
-			bp_get_option( 'blogname' )
-		),
+		'footer_text' => implode( ' &middot; ', $footer_text ),
 	);
 
 	$options = bp_parse_args(
@@ -3385,9 +3400,9 @@ function bp_email_get_schema() {
 			/* translators: do not remove {} brackets or translate its contents. */
 			'post_title'   => __( '[{{{site.name}}}] Activate your account', 'buddypress' ),
 			/* translators: do not remove {} brackets or translate its contents. */
-			'post_content' => __( "Thanks for registering!\n\nTo complete the activation of your account, go to the following link: <a href=\"{{{activate.url}}}\">{{{activate.url}}}</a>", 'buddypress' ),
+			'post_content' => __( "Thanks for registering!\n\nTo complete the activation of your account, go to the following link and click on the <strong>Activate</strong> button:\n<a href=\"{{{activate.url}}}\">{{{activate.url}}}</a>\n\nIf the 'Activation Key' field is empty, copy and paste the following into the field - {{key}}", 'buddypress' ),
 			/* translators: do not remove {} brackets or translate its contents. */
-			'post_excerpt' => __( "Thanks for registering!\n\nTo complete the activation of your account, go to the following link: {{{activate.url}}}", 'buddypress' )
+			'post_excerpt' => __( "Thanks for registering!\n\nTo complete the activation of your account, go to the following link and click on the 'Activate' button: {{{activate.url}}}\n\nIf the 'Activation Key' field is empty, copy and paste the following into the field - {{key}}", 'buddypress' )
 		),
 		'core-user-registration-with-blog' => array(
 			/* translators: do not remove {} brackets or translate its contents. */
