@@ -358,7 +358,7 @@ module.exports = function( grunt ) {
 	grunt.registerTask( 'travis:grunt', 'Runs Grunt build task.', [ 'build' ]);
 	grunt.registerTask( 'travis:phpunit', ['jsvalidate:src', 'jshint', 'checktextdomain', 'phplint', 'test'] );
 	grunt.registerTask( 'travis:codecoverage', 'Runs PHPUnit tasks with code-coverage generation.', ['phpunit:codecoverage'] );
-	grunt.registerTask( 'travis:phpcompat', 'Runs PHP compatibility scan.', ['phpcs'] );
+	grunt.registerTask( 'travis:phpcompat', 'Runs PHP compatibility scan.', ['exec:phpcs'] );
 
 	// Patch task.
 	grunt.renameTask( 'patch_wordpress', 'patch' );
