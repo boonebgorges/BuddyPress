@@ -298,8 +298,7 @@ module.exports = function( grunt ) {
 				stdout: false
 			},
 			phpcs: {
-				command: '../vendor/bin/phpcs -p --standard=PHPCompatibility --runtime-set testVersion 5.3- .',
-				cwd: BUILD_DIR,
+				command: './vendor/bin/phpcs -p --standard=PHPCompatibility --runtime-set testVersion 5.3- src tests',
 				stdout: true
 			}
 		},
