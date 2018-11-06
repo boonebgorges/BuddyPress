@@ -112,7 +112,6 @@ before_script:
 
 # Run tests
 script:
-  - php tests/lint-php/lint-php.php .
   - grunt $BP_TRAVISCI
 
 notifications:
