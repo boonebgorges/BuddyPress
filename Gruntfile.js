@@ -296,6 +296,11 @@ module.exports = function( grunt ) {
 				command: 'svn export --force https://github.com/buddypress/wp-cli-buddypress.git/tags/1.7 cli',
 				cwd: BUILD_DIR,
 				stdout: false
+			},
+			phpcs: {
+				command: './vendor/bin/phpcs -p --standard=PHPCompatibility --runtime-set testVersion 5.3- .',
+				cwd: BUILD_DIR,
+				stdout: true
 			}
 		},
 		jsvalidate:{
@@ -353,6 +358,7 @@ module.exports = function( grunt ) {
 	grunt.registerTask( 'travis:grunt', 'Runs Grunt build task.', [ 'build' ]);
 	grunt.registerTask( 'travis:phpunit', ['jsvalidate:src', 'jshint', 'checktextdomain', 'phplint', 'test'] );
 	grunt.registerTask( 'travis:codecoverage', 'Runs PHPUnit tasks with code-coverage generation.', ['phpunit:codecoverage'] );
+	grunt.registerTask( 'travis:phpcompat', 'Runs PHP compatibility scan.', ['phpcs'] );
 
 	// Patch task.
 	grunt.renameTask( 'patch_wordpress', 'patch' );
