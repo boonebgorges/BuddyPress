@@ -513,6 +513,11 @@ class BuddyPress {
 		if ( defined( 'WP_CLI' ) && file_exists( $this->plugin_dir . 'cli/wp-cli-bp.php' ) && version_compare( phpversion(), '5.4.0', '>=' ) ) {
 			require( $this->plugin_dir . 'cli/wp-cli-bp.php' );
 		}
+
+		// Load CLI commands.
+		if ( defined( 'WP_CLI' ) ) {
+			require( $this->plugin_dir . 'cli/wp-cli-bp.php' );
+		}
 	}
 
 	/**
